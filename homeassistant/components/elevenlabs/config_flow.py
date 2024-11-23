@@ -14,6 +14,7 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
@@ -102,12 +103,13 @@ class ElevenLabsConfigFlow(ConfigFlow, domain=DOMAIN):
         return ElevenLabsOptionsFlow(config_entry)
 
 
-class ElevenLabsOptionsFlow(OptionsFlow):
+class ElevenLabsOptionsFlow(OptionsFlowWithConfigEntry):
     """ElevenLabs options flow."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
-        self.api_key: str = config_entry.data[CONF_API_KEY]
+        super().__init__(config_entry)
+        self.api_key: str = self.config_entry.data[CONF_API_KEY]
         # id -> name
         self.voices: dict[str, str] = {}
         self.models: dict[str, str] = {}
@@ -168,7 +170,7 @@ class ElevenLabsOptionsFlow(OptionsFlow):
                     vol.Required(CONF_CONFIGURE_VOICE, default=False): bool,
                 }
             ),
-            self.config_entry.options,
+            self.options,
         )
 
     async def async_step_voice_settings(

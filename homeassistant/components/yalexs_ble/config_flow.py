@@ -312,11 +312,15 @@ class YalexsConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> YaleXSBLEOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return YaleXSBLEOptionsFlowHandler()
+        return YaleXSBLEOptionsFlowHandler(config_entry)
 
 
 class YaleXSBLEOptionsFlowHandler(OptionsFlow):
     """Handle YaleXSBLE options."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize YaleXSBLE options flow."""
+        self.entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -339,9 +343,7 @@ class YaleXSBLEOptionsFlowHandler(OptionsFlow):
                 {
                     vol.Optional(
                         CONF_ALWAYS_CONNECTED,
-                        default=self.config_entry.options.get(
-                            CONF_ALWAYS_CONNECTED, False
-                        ),
+                        default=self.entry.options.get(CONF_ALWAYS_CONNECTED, False),
                     ): bool,
                 }
             ),

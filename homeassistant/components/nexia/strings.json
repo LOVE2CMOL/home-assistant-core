@@ -64,7 +64,7 @@
   "services": {
     "set_aircleaner_mode": {
       "name": "Set air cleaner mode",
-      "description": "Sets the air cleaner mode.",
+      "description": "The air cleaner mode.",
       "fields": {
         "aircleaner_mode": {
           "name": "Air cleaner mode",
@@ -74,17 +74,17 @@
     },
     "set_humidify_setpoint": {
       "name": "Set humidify set point",
-      "description": "Sets the target humidity.",
+      "description": "The humidification set point.",
       "fields": {
         "humidity": {
-          "name": "Humidity",
+          "name": "Humidify",
           "description": "The humidification setpoint."
         }
       }
     },
     "set_hvac_run_mode": {
       "name": "Set hvac run mode",
-      "description": "Sets the HVAC operation mode.",
+      "description": "The HVAC run mode.",
       "fields": {
         "run_mode": {
           "name": "Run mode",

@@ -14,7 +14,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_HOST, CONF_NAME
 from homeassistant.core import HomeAssistant, callback
@@ -165,12 +165,12 @@ class RokuConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(
         config_entry: ConfigEntry,
-    ) -> RokuOptionsFlowHandler:
+    ) -> OptionsFlowWithConfigEntry:
         """Create the options flow."""
-        return RokuOptionsFlowHandler()
+        return RokuOptionsFlowHandler(config_entry)
 
 
-class RokuOptionsFlowHandler(OptionsFlow):
+class RokuOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle Roku options."""
 
     async def async_step_init(
@@ -186,7 +186,7 @@ class RokuOptionsFlowHandler(OptionsFlow):
                 {
                     vol.Optional(
                         CONF_PLAY_MEDIA_APP_ID,
-                        default=self.config_entry.options.get(
+                        default=self.options.get(
                             CONF_PLAY_MEDIA_APP_ID, DEFAULT_PLAY_MEDIA_APP_ID
                         ),
                     ): str,

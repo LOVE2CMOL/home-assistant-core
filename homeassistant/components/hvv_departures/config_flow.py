@@ -141,14 +141,16 @@ class HVVDeparturesConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get options flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
 
 class OptionsFlowHandler(OptionsFlow):
     """Options flow handler."""
 
-    def __init__(self) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize HVV Departures options flow."""
+        self.config_entry = config_entry
+        self.options = dict(config_entry.options)
         self.departure_filters: dict[str, Any] = {}
 
     async def async_step_init(

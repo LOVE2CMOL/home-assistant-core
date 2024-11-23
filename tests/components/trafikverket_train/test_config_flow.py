@@ -16,7 +16,6 @@ from pytrafikverket.models import TrainStopModel
 
 from homeassistant import config_entries
 from homeassistant.components.trafikverket_train.const import (
-    CONF_FILTER_PRODUCT,
     CONF_FROM,
     CONF_TIME,
     CONF_TO,
@@ -40,7 +39,7 @@ async def test_form(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -74,6 +73,7 @@ async def test_form(hass: HomeAssistant) -> None:
     }
     assert result["options"] == {"filter_product": None}
     assert len(mock_setup_entry.mock_calls) == 1
+    assert result["result"].unique_id == "stockholmc-uppsalac-10:00-['mon', 'fri']"
 
 
 async def test_form_entry_already_exist(hass: HomeAssistant) -> None:
@@ -88,10 +88,8 @@ async def test_form_entry_already_exist(hass: HomeAssistant) -> None:
             CONF_TO: "Uppsala C",
             CONF_TIME: "10:00",
             CONF_WEEKDAY: WEEKDAYS,
-            CONF_FILTER_PRODUCT: None,
         },
-        version=1,
-        minor_version=2,
+        unique_id=f"stockholmc-uppsalac-10:00-{WEEKDAYS}",
     )
     entry.add_to_hass(hass)
 
@@ -103,7 +101,7 @@ async def test_form_entry_already_exist(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -163,7 +161,7 @@ async def test_flow_fails(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
             side_effect=side_effect(),
         ),
         patch(
@@ -208,7 +206,7 @@ async def test_flow_fails_departures(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_next_train_stops",
@@ -242,8 +240,7 @@ async def test_reauth_flow(hass: HomeAssistant) -> None:
             CONF_TIME: "10:00",
             CONF_WEEKDAY: WEEKDAYS,
         },
-        version=1,
-        minor_version=2,
+        unique_id=f"stockholmc-uppsalac-10:00-{WEEKDAYS}",
     )
     entry.add_to_hass(hass)
 
@@ -254,7 +251,7 @@ async def test_reauth_flow(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -317,8 +314,7 @@ async def test_reauth_flow_error(
             CONF_TIME: "10:00",
             CONF_WEEKDAY: WEEKDAYS,
         },
-        version=1,
-        minor_version=2,
+        unique_id=f"stockholmc-uppsalac-10:00-{WEEKDAYS}",
     )
     entry.add_to_hass(hass)
 
@@ -326,7 +322,7 @@ async def test_reauth_flow_error(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
             side_effect=side_effect(),
         ),
         patch(
@@ -345,7 +341,7 @@ async def test_reauth_flow_error(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -400,8 +396,7 @@ async def test_reauth_flow_error_departures(
             CONF_TIME: "10:00",
             CONF_WEEKDAY: WEEKDAYS,
         },
-        version=1,
-        minor_version=2,
+        unique_id=f"stockholmc-uppsalac-10:00-{WEEKDAYS}",
     )
     entry.add_to_hass(hass)
 
@@ -409,7 +404,7 @@ async def test_reauth_flow_error_departures(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -428,7 +423,7 @@ async def test_reauth_flow_error_departures(
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.config_flow.TrafikverketTrain.async_get_train_stop",
@@ -472,14 +467,13 @@ async def test_options_flow(
             CONF_TIME: "10:00",
             CONF_WEEKDAY: WEEKDAYS,
         },
-        version=1,
-        minor_version=2,
+        unique_id=f"stockholmc-uppsalac-10:00-{WEEKDAYS}",
     )
     entry.add_to_hass(hass)
 
     with (
         patch(
-            "homeassistant.components.trafikverket_train.coordinator.TrafikverketTrain.async_search_train_station",
+            "homeassistant.components.trafikverket_train.coordinator.TrafikverketTrain.async_get_train_station",
         ),
         patch(
             "homeassistant.components.trafikverket_train.coordinator.TrafikverketTrain.async_get_next_train_stops",

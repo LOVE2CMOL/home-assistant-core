@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from copy import deepcopy
 import logging
 from typing import Any
 
@@ -25,6 +24,7 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_USERNAME
 from homeassistant.core import callback
@@ -171,17 +171,13 @@ class RoborockFlowHandler(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(
         config_entry: ConfigEntry,
-    ) -> RoborockOptionsFlowHandler:
+    ) -> OptionsFlow:
         """Create the options flow."""
         return RoborockOptionsFlowHandler(config_entry)
 
 
-class RoborockOptionsFlowHandler(OptionsFlow):
+class RoborockOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle an option flow for Roborock."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.options = deepcopy(dict(config_entry.options))
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

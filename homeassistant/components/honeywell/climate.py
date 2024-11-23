@@ -398,7 +398,7 @@ class HoneywellUSThermostat(ClimateEntity):
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
                 translation_key="temp_failed_value",
-                translation_placeholders={"temperature": temperature},
+                translation_placeholders={"temp": temperature},
             ) from err
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
@@ -422,7 +422,7 @@ class HoneywellUSThermostat(ClimateEntity):
                 raise ServiceValidationError(
                     translation_domain=DOMAIN,
                     translation_key="temp_failed_value",
-                    translation_placeholders={"temperature": str(temperature)},
+                    translation_placeholders={"temp": str(temperature)},
                 ) from err
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:

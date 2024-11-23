@@ -27,8 +27,6 @@ from .util import valid_subscribe_topic
 
 _LOGGER = logging.getLogger(__name__)
 
-PARALLEL_UPDATES = 0
-
 CONF_IMAGE_ENCODING = "image_encoding"
 
 DEFAULT_NAME = "MQTT Camera"

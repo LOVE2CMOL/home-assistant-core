@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from pylamarzocco.models import LaMarzoccoMachineConfig
+from lmcloud.models import LaMarzoccoMachineConfig
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,

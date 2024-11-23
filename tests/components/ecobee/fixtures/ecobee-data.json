@@ -160,7 +160,6 @@
         "hasHumidifier": true,
         "humidifierMode": "manual",
         "hasHeatPump": true,
-        "compressorProtectionMinTemp": 100,
         "humidity": "30"
       },
       "equipmentStatus": "fan",

@@ -33,7 +33,6 @@ from .entity import (
 )
 from .util import ReolinkConfigEntry, ReolinkData
 
-PARALLEL_UPDATES = 0
 ATTR_SPEED = "speed"
 SUPPORT_PTZ_SPEED = CameraEntityFeature.STREAM
 SERVICE_PTZ_MOVE = "ptz_move"
@@ -212,7 +211,7 @@ class ReolinkButtonEntity(ReolinkChannelCoordinatorEntity, ButtonEntity):
         except ReolinkError as err:
             raise HomeAssistantError(err) from err
 
-    async def async_ptz_move(self, **kwargs: Any) -> None:
+    async def async_ptz_move(self, **kwargs) -> None:
         """PTZ move with speed."""
         speed = kwargs[ATTR_SPEED]
         try:

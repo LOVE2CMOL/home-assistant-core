@@ -182,6 +182,7 @@ class HiveOptionsFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize Hive options flow."""
         self.hive = None
+        self.config_entry = config_entry
         self.interval = config_entry.options.get(CONF_SCAN_INTERVAL, 120)
 
     async def async_step_init(

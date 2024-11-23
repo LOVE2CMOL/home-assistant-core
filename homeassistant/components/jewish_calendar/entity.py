@@ -1,27 +1,18 @@
 """Entity representing a Jewish Calendar sensor."""
 
-from dataclasses import dataclass
-
-from hdate import Location
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_LANGUAGE, CONF_LOCATION
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity import Entity, EntityDescription
 
-from .const import DOMAIN
-
-type JewishCalendarConfigEntry = ConfigEntry[JewishCalendarData]
-
-
-@dataclass
-class JewishCalendarData:
-    """Jewish Calendar runtime dataclass."""
-
-    language: str
-    diaspora: bool
-    location: Location
-    candle_lighting_offset: int
-    havdalah_offset: int
+from .const import (
+    CONF_CANDLE_LIGHT_MINUTES,
+    CONF_DIASPORA,
+    CONF_HAVDALAH_OFFSET_MINUTES,
+    DOMAIN,
+)
 
 
 class JewishCalendarEntity(Entity):
@@ -31,7 +22,8 @@ class JewishCalendarEntity(Entity):
 
     def __init__(
         self,
-        config_entry: JewishCalendarConfigEntry,
+        config_entry: ConfigEntry,
+        data: dict[str, Any],
         description: EntityDescription,
     ) -> None:
         """Initialize a Jewish Calendar entity."""
@@ -40,11 +32,10 @@ class JewishCalendarEntity(Entity):
         self._attr_device_info = DeviceInfo(
             entry_type=DeviceEntryType.SERVICE,
             identifiers={(DOMAIN, config_entry.entry_id)},
+            name=config_entry.title,
         )
-        data = config_entry.runtime_data
-        self._location = data.location
-        self._hebrew = data.language == "hebrew"
-        self._language = data.language
-        self._candle_lighting_offset = data.candle_lighting_offset
-        self._havdalah_offset = data.havdalah_offset
-        self._diaspora = data.diaspora
+        self._location = data[CONF_LOCATION]
+        self._hebrew = data[CONF_LANGUAGE] == "hebrew"
+        self._candle_lighting_offset = data[CONF_CANDLE_LIGHT_MINUTES]
+        self._havdalah_offset = data[CONF_HAVDALAH_OFFSET_MINUTES]
+        self._diaspora = data[CONF_DIASPORA]

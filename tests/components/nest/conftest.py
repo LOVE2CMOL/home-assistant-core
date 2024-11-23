@@ -22,7 +22,6 @@ from homeassistant.components.application_credentials import (
 )
 from homeassistant.components.nest import DOMAIN
 from homeassistant.components.nest.const import CONF_SUBSCRIBER_ID, SDM_SCOPES
-from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 
@@ -203,6 +202,20 @@ def nest_test_config() -> NestTestConfig:
 
 
 @pytest.fixture
+def config(
+    subscriber_id: str | None, nest_test_config: NestTestConfig
+) -> dict[str, Any]:
+    """Fixture that sets up the configuration.yaml for the test."""
+    config = copy.deepcopy(nest_test_config.config)
+    if CONF_SUBSCRIBER_ID in config.get(DOMAIN, {}):
+        if subscriber_id:
+            config[DOMAIN][CONF_SUBSCRIBER_ID] = subscriber_id
+        else:
+            del config[DOMAIN][CONF_SUBSCRIBER_ID]
+    return config
+
+
+@pytest.fixture
 def config_entry_unique_id() -> str:
     """Fixture to set ConfigEntry unique id."""
     return PROJECT_ID
@@ -261,19 +274,19 @@ async def credential(hass: HomeAssistant, nest_test_config: NestTestConfig) -> N
 async def setup_base_platform(
     hass: HomeAssistant,
     platforms: list[str],
+    config: dict[str, Any],
     config_entry: MockConfigEntry | None,
 ) -> YieldFixture[PlatformSetup]:
     """Fixture to setup the integration platform."""
-    config_entry.add_to_hass(hass)
+    if config_entry:
+        config_entry.add_to_hass(hass)
     with patch("homeassistant.components.nest.PLATFORMS", platforms):
 
         async def _setup_func() -> bool:
-            await hass.config_entries.async_setup(config_entry.entry_id)
+            assert await async_setup_component(hass, DOMAIN, config)
             await hass.async_block_till_done()
 
         yield _setup_func
-        if config_entry.state == ConfigEntryState.LOADED:
-            await hass.config_entries.async_unload(config_entry.entry_id)
 
 
 @pytest.fixture

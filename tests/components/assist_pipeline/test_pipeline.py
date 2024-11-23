@@ -574,7 +574,6 @@ async def test_update_pipeline(
         "tts_voice": "test_voice",
         "wake_word_entity": "wake_work.test_1",
         "wake_word_id": "wake_word_id_1",
-        "prefer_local_intents": False,
     }
 
     await async_update_pipeline(
@@ -618,7 +617,6 @@ async def test_update_pipeline(
         "tts_voice": "test_voice",
         "wake_word_entity": "wake_work.test_1",
         "wake_word_id": "wake_word_id_1",
-        "prefer_local_intents": False,
     }
 
 

@@ -12,7 +12,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.core import callback
 
@@ -33,7 +33,7 @@ class KitchenSinkConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
         """Set the config entry up from yaml."""
@@ -54,7 +54,7 @@ class KitchenSinkConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_abort(reason="reauth_successful")
 
 
-class OptionsFlowHandler(OptionsFlow):
+class OptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle options."""
 
     async def async_step_init(
@@ -68,7 +68,8 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(data=self.config_entry.options | user_input)
+            self.options.update(user_input)
+            return await self._update_options()
 
         return self.async_show_form(
             step_id="options_1",
@@ -94,3 +95,7 @@ class OptionsFlowHandler(OptionsFlow):
                 }
             ),
         )
+
+    async def _update_options(self) -> ConfigFlowResult:
+        """Update config entry options."""
+        return self.async_create_entry(title="", data=self.options)

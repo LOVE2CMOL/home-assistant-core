@@ -17,6 +17,7 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
@@ -62,11 +63,9 @@ class VodafoneStationConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> VodafoneStationOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return VodafoneStationOptionsFlowHandler()
+        return VodafoneStationOptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -144,7 +143,7 @@ class VodafoneStationConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
-class VodafoneStationOptionsFlowHandler(OptionsFlow):
+class VodafoneStationOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle a option flow."""
 
     async def async_step_init(
@@ -159,7 +158,7 @@ class VodafoneStationOptionsFlowHandler(OptionsFlow):
             {
                 vol.Optional(
                     CONF_CONSIDER_HOME,
-                    default=self.config_entry.options.get(
+                    default=self.options.get(
                         CONF_CONSIDER_HOME, DEFAULT_CONSIDER_HOME.total_seconds()
                     ),
                 ): vol.All(vol.Coerce(int), vol.Clamp(min=0, max=900))

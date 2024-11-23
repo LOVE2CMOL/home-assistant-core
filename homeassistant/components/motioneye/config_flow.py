@@ -179,15 +179,17 @@ class MotionEyeConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> MotionEyeOptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> MotionEyeOptionsFlow:
         """Get the Hyperion Options flow."""
-        return MotionEyeOptionsFlow()
+        return MotionEyeOptionsFlow(config_entry)
 
 
 class MotionEyeOptionsFlow(OptionsFlow):
     """motionEye options flow."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize a motionEye options flow."""
+        self._config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -199,14 +201,14 @@ class MotionEyeOptionsFlow(OptionsFlow):
         schema: dict[vol.Marker, type] = {
             vol.Required(
                 CONF_WEBHOOK_SET,
-                default=self.config_entry.options.get(
+                default=self._config_entry.options.get(
                     CONF_WEBHOOK_SET,
                     DEFAULT_WEBHOOK_SET,
                 ),
             ): bool,
             vol.Required(
                 CONF_WEBHOOK_SET_OVERWRITE,
-                default=self.config_entry.options.get(
+                default=self._config_entry.options.get(
                     CONF_WEBHOOK_SET_OVERWRITE,
                     DEFAULT_WEBHOOK_SET_OVERWRITE,
                 ),
@@ -217,9 +219,9 @@ class MotionEyeOptionsFlow(OptionsFlow):
             # The input URL is not validated as being a URL, to allow for the possibility
             # the template input won't be a valid URL until after it's rendered
             description: dict[str, str] | None = None
-            if CONF_STREAM_URL_TEMPLATE in self.config_entry.options:
+            if CONF_STREAM_URL_TEMPLATE in self._config_entry.options:
                 description = {
-                    "suggested_value": self.config_entry.options[
+                    "suggested_value": self._config_entry.options[
                         CONF_STREAM_URL_TEMPLATE
                     ]
                 }

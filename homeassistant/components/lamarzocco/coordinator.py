@@ -8,12 +8,11 @@ import logging
 from time import time
 from typing import Any
 
-from pylamarzocco.client_bluetooth import LaMarzoccoBluetoothClient
-from pylamarzocco.client_cloud import LaMarzoccoCloudClient
-from pylamarzocco.client_local import LaMarzoccoLocalClient
-from pylamarzocco.exceptions import AuthFail, RequestNotSuccessful
-from pylamarzocco.lm_machine import LaMarzoccoMachine
-from websockets.protocol import State
+from lmcloud.client_bluetooth import LaMarzoccoBluetoothClient
+from lmcloud.client_cloud import LaMarzoccoCloudClient
+from lmcloud.client_local import LaMarzoccoLocalClient
+from lmcloud.exceptions import AuthFail, RequestNotSuccessful
+from lmcloud.lm_machine import LaMarzoccoMachine
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_MODEL, CONF_NAME, EVENT_HOMEASSISTANT_STOP
@@ -86,7 +85,7 @@ class LaMarzoccoUpdateCoordinator(DataUpdateCoordinator[None]):
                 if (
                     self._local_client is not None
                     and self._local_client.websocket is not None
-                    and self._local_client.websocket.state is State.OPEN
+                    and self._local_client.websocket.open
                 ):
                     self._local_client.terminating = True
                     await self._local_client.websocket.close()
@@ -127,10 +126,9 @@ class LaMarzoccoUpdateCoordinator(DataUpdateCoordinator[None]):
         try:
             await func(*args, **kwargs)
         except AuthFail as ex:
-            _LOGGER.debug("Authentication failed", exc_info=True)
-            raise ConfigEntryAuthFailed(
-                translation_domain=DOMAIN, translation_key="authentication_failed"
-            ) from ex
+            msg = "Authentication failed."
+            _LOGGER.debug(msg, exc_info=True)
+            raise ConfigEntryAuthFailed(msg) from ex
         except RequestNotSuccessful as ex:
             _LOGGER.debug(ex, exc_info=True)
             raise UpdateFailed(f"Querying API failed. Error: {ex}") from ex

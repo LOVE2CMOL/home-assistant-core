@@ -15,7 +15,7 @@ from homeassistant.config_entries import (
     SOURCE_REAUTH,
     ConfigEntry,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_ACCESS_TOKEN, CONF_TOKEN
 from homeassistant.core import callback
@@ -54,7 +54,7 @@ class OAuth2FlowHandler(
         config_entry: ConfigEntry,
     ) -> YouTubeOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return YouTubeOptionsFlowHandler()
+        return YouTubeOptionsFlowHandler(config_entry)
 
     @property
     def logger(self) -> logging.Logger:
@@ -159,7 +159,7 @@ class OAuth2FlowHandler(
         )
 
 
-class YouTubeOptionsFlowHandler(OptionsFlow):
+class YouTubeOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """YouTube Options flow handler."""
 
     async def async_step_init(
@@ -194,6 +194,6 @@ class YouTubeOptionsFlowHandler(OptionsFlow):
                         ),
                     }
                 ),
-                self.config_entry.options,
+                self.options,
             ),
         )

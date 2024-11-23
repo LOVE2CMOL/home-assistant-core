@@ -31,26 +31,25 @@ async def async_setup_entry(
     """Set up the ecobee thermostat switch entity."""
     data: EcobeeData = hass.data[DOMAIN]
 
-    entities: list[SwitchEntity] = [
-        EcobeeVentilator20MinSwitch(
-            data,
-            index,
-            (await dt_util.async_get_time_zone(thermostat["location"]["timeZone"]))
-            or dt_util.get_default_time_zone(),
-        )
-        for index, thermostat in enumerate(data.ecobee.thermostats)
-        if thermostat["settings"]["ventilatorType"] != "none"
-    ]
-
-    entities.extend(
-        (
-            EcobeeSwitchAuxHeatOnly(data, index)
+    async_add_entities(
+        [
+            EcobeeVentilator20MinSwitch(
+                data,
+                index,
+                (await dt_util.async_get_time_zone(thermostat["location"]["timeZone"]))
+                or dt_util.get_default_time_zone(),
+            )
             for index, thermostat in enumerate(data.ecobee.thermostats)
-            if thermostat["settings"]["hasHeatPump"]
-        )
+            if thermostat["settings"]["ventilatorType"] != "none"
+        ],
+        update_before_add=True,
     )
 
-    async_add_entities(entities, update_before_add=True)
+    async_add_entities(
+        EcobeeSwitchAuxHeatOnly(data, index)
+        for index, thermostat in enumerate(data.ecobee.thermostats)
+        if thermostat["settings"]["hasHeatPump"]
+    )
 
 
 class EcobeeVentilator20MinSwitch(EcobeeBaseEntity, SwitchEntity):

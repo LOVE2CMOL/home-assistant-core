@@ -106,7 +106,7 @@ class SubaruConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow for this handler."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     async def validate_login_creds(self, data):
         """Validate the user input allows us to connect.
@@ -217,6 +217,10 @@ class SubaruConfigFlow(ConfigFlow, domain=DOMAIN):
 
 class OptionsFlowHandler(OptionsFlow):
     """Handle a option flow for Subaru."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

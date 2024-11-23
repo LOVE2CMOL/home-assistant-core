@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from pysuez import SuezClient
+from pysuez.client import PySuezError
 
-from .const import DOMAIN
-from .coordinator import SuezWaterCoordinator
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
+
+from .const import CONF_COUNTER_ID, DOMAIN
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -15,10 +18,23 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Suez Water from a config entry."""
 
-    coordinator = SuezWaterCoordinator(hass, entry)
-    await coordinator.async_config_entry_first_refresh()
+    def get_client() -> SuezClient:
+        try:
+            client = SuezClient(
+                entry.data[CONF_USERNAME],
+                entry.data[CONF_PASSWORD],
+                entry.data[CONF_COUNTER_ID],
+                provider=None,
+            )
+            if not client.check_credentials():
+                raise ConfigEntryError
+        except PySuezError as ex:
+            raise ConfigEntryNotReady from ex
+        return client
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    hass.data.setdefault(DOMAIN, {})[
+        entry.entry_id
+    ] = await hass.async_add_executor_job(get_client)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

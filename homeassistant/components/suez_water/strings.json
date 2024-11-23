@@ -12,8 +12,7 @@
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]",
-      "counter_not_found": "Could not find counter id automatically"
+      "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
@@ -23,9 +22,6 @@
     "sensor": {
       "water_usage_yesterday": {
         "name": "Water usage yesterday"
-      },
-      "water_price": {
-        "name": "Water price"
       }
     }
   }

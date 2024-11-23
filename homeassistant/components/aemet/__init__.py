@@ -1,9 +1,10 @@
 """The AEMET OpenData component."""
 
+from dataclasses import dataclass
 import logging
 
 from aemet_opendata.exceptions import AemetError, TownNotFound
-from aemet_opendata.interface import AEMET, ConnectionOptions, UpdateFeature
+from aemet_opendata.interface import AEMET, ConnectionOptions
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
@@ -12,9 +13,19 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import aiohttp_client
 
 from .const import CONF_STATION_UPDATES, PLATFORMS
-from .coordinator import AemetConfigEntry, AemetData, WeatherUpdateCoordinator
+from .coordinator import WeatherUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+type AemetConfigEntry = ConfigEntry[AemetData]
+
+
+@dataclass
+class AemetData:
+    """Aemet runtime data."""
+
+    name: str
+    coordinator: WeatherUpdateCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: AemetConfigEntry) -> bool:
@@ -23,11 +34,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: AemetConfigEntry) -> boo
     api_key = entry.data[CONF_API_KEY]
     latitude = entry.data[CONF_LATITUDE]
     longitude = entry.data[CONF_LONGITUDE]
-    update_features: int = UpdateFeature.FORECAST
-    if entry.options.get(CONF_STATION_UPDATES, True):
-        update_features |= UpdateFeature.STATION
+    station_updates = entry.options.get(CONF_STATION_UPDATES, True)
 
-    options = ConnectionOptions(api_key, update_features)
+    options = ConnectionOptions(api_key, station_updates)
     aemet = AEMET(aiohttp_client.async_get_clientsession(hass), options)
     try:
         await aemet.select_coordinates(latitude, longitude)
@@ -37,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: AemetConfigEntry) -> boo
     except AemetError as err:
         raise ConfigEntryNotReady(err) from err
 
-    weather_coordinator = WeatherUpdateCoordinator(hass, entry, aemet)
+    weather_coordinator = WeatherUpdateCoordinator(hass, aemet)
     await weather_coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = AemetData(name=name, coordinator=weather_coordinator)

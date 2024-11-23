@@ -1,7 +1,6 @@
 """Tests for the Dexcom integration."""
 
 import json
-from typing import Any
 from unittest.mock import patch
 
 from pydexcom import GlucoseReading
@@ -21,16 +20,14 @@ CONFIG = {
 GLUCOSE_READING = GlucoseReading(json.loads(load_fixture("data.json", "dexcom")))
 
 
-async def init_integration(
-    hass: HomeAssistant, options: dict[str, Any] | None = None
-) -> MockConfigEntry:
+async def init_integration(hass: HomeAssistant) -> MockConfigEntry:
     """Set up the Dexcom integration in Home Assistant."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="test_username",
         unique_id="test_username",
         data=CONFIG,
-        options=options,
+        options=None,
     )
     with (
         patch(

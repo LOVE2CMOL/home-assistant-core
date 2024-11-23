@@ -7,7 +7,7 @@
       'title_placeholders': dict({
         'name': 'Mock Title',
       }),
-      'unique_id': None,
+      'unique_id': '321',
     }),
     'flow_id': <ANY>,
     'handler': 'trafikverket_train',

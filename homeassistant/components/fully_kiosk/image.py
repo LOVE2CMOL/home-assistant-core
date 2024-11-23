@@ -9,12 +9,13 @@ from typing import Any
 from fullykiosk import FullyKiosk, FullyKioskError
 
 from homeassistant.components.image import ImageEntity, ImageEntityDescription
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 import homeassistant.util.dt as dt_util
 
-from . import FullyKioskConfigEntry
+from .const import DOMAIN
 from .coordinator import FullyKioskDataUpdateCoordinator
 from .entity import FullyKioskEntity
 
@@ -36,12 +37,10 @@ IMAGES: tuple[FullyImageEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: FullyKioskConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up the Fully Kiosk Browser image entities."""
-    coordinator = entry.runtime_data
+    coordinator: FullyKioskDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         FullyImageEntity(coordinator, description) for description in IMAGES
     )

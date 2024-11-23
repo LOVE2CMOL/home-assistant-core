@@ -15,7 +15,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
@@ -135,10 +135,10 @@ class GoogleCloudConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> GoogleCloudOptionsFlowHandler:
         """Create the options flow."""
-        return GoogleCloudOptionsFlowHandler()
+        return GoogleCloudOptionsFlowHandler(config_entry)
 
 
-class GoogleCloudOptionsFlowHandler(OptionsFlow):
+class GoogleCloudOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Google Cloud options flow."""
 
     async def async_step_init(
@@ -169,7 +169,7 @@ class GoogleCloudOptionsFlowHandler(OptionsFlow):
                             )
                         ),
                         **tts_options_schema(
-                            self.config_entry.options, voices, from_config_flow=True
+                            self.options, voices, from_config_flow=True
                         ).schema,
                         vol.Optional(
                             CONF_STT_MODEL,
@@ -182,6 +182,6 @@ class GoogleCloudOptionsFlowHandler(OptionsFlow):
                         ),
                     }
                 ),
-                self.config_entry.options,
+                self.options,
             ),
         )

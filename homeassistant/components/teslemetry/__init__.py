@@ -135,11 +135,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: TeslemetryConfigEntry) -
 
         elif "energy_site_id" in product and Scope.ENERGY_DEVICE_DATA in scopes:
             site_id = product["energy_site_id"]
-            powerwall = (
-                product["components"]["battery"] or product["components"]["solar"]
-            )
-            wall_connector = "wall_connectors" in product["components"]
-            if not powerwall and not wall_connector:
+            if not (
+                product["components"]["battery"]
+                or product["components"]["solar"]
+                or "wall_connectors" in product["components"]
+            ):
                 LOGGER.debug(
                     "Skipping Energy Site %s as it has no components",
                     site_id,
@@ -162,11 +162,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: TeslemetryConfigEntry) -
                     info_coordinator=TeslemetryEnergySiteInfoCoordinator(
                         hass, api, product
                     ),
-                    history_coordinator=(
-                        TeslemetryEnergyHistoryCoordinator(hass, api)
-                        if powerwall
-                        else None
-                    ),
+                    history_coordinator=TeslemetryEnergyHistoryCoordinator(hass, api),
                     id=site_id,
                     device=device,
                 )
@@ -189,7 +185,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: TeslemetryConfigEntry) -
         *(
             energysite.history_coordinator.async_config_entry_first_refresh()
             for energysite in energysites
-            if energysite.history_coordinator
         ),
     )
 

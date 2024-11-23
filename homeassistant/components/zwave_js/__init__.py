@@ -9,7 +9,6 @@ import logging
 from typing import Any
 
 from awesomeversion import AwesomeVersion
-import voluptuous as vol
 from zwave_js_server.client import Client as ZwaveClient
 from zwave_js_server.const import CommandClass, RemoveNodeReason
 from zwave_js_server.exceptions import BaseZwaveJSServerError, InvalidServerVersion
@@ -88,7 +87,6 @@ from .const import (
     CONF_ADDON_S2_AUTHENTICATED_KEY,
     CONF_ADDON_S2_UNAUTHENTICATED_KEY,
     CONF_DATA_COLLECTION_OPTED_IN,
-    CONF_INSTALLER_MODE,
     CONF_INTEGRATION_CREATED_ADDON,
     CONF_LR_S2_ACCESS_CONTROL_KEY,
     CONF_LR_S2_AUTHENTICATED_KEY,
@@ -134,21 +132,12 @@ DATA_CLIENT_LISTEN_TASK = "client_listen_task"
 DATA_DRIVER_EVENTS = "driver_events"
 DATA_START_CLIENT_TASK = "start_client_task"
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Optional(CONF_INSTALLER_MODE, default=False): cv.boolean,
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Z-Wave JS component."""
-    hass.data[DOMAIN] = config.get(DOMAIN, {})
+    hass.data[DOMAIN] = {}
     for entry in hass.config_entries.async_entries(DOMAIN):
         if not isinstance(entry.unique_id, str):
             hass.config_entries.async_update_entry(

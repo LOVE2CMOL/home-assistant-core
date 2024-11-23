@@ -67,12 +67,12 @@
       "request": "attach",
       "connect": {
         "port": 5678,
-        "host": "homeassistant.local"
+        "host": "192.168.83.37"
       },
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/usr/src/homeassistant"
+          "remoteRoot": "/home/love2cmol/home-assistant-core"
         }
       ]
     }

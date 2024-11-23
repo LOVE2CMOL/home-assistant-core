@@ -44,11 +44,15 @@ class IBeaconConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return IBeaconOptionsFlow()
+        return IBeaconOptionsFlow(config_entry)
 
 
 class IBeaconOptionsFlow(OptionsFlow):
     """Handle options."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict | None = None) -> ConfigFlowResult:
         """Manage the options."""

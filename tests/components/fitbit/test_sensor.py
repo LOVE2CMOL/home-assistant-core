@@ -78,151 +78,133 @@ def mock_token_refresh(requests_mock: Mocker) -> None:
     [
         (
             ["activities/activityCalories"],
-            "sensor.first_l_activity_calories",
+            "sensor.activity_calories",
             "activities/activityCalories",
             "135",
         ),
         (
-            ["activities/tracker/activityCalories"],
-            "sensor.first_l_tracker_activity_calories",
-            "activities/tracker/activityCalories",
-            "135",
-        ),
-        (
             ["activities/calories"],
-            "sensor.first_l_calories",
+            "sensor.calories",
             "activities/calories",
             "139",
         ),
         (
-            ["activities/tracker/calories"],
-            "sensor.first_l_tracker_calories",
-            "activities/tracker/calories",
-            "139",
-        ),
-        (
             ["activities/distance"],
-            "sensor.first_l_distance",
-            "activities/distance",
-            "12.7",
-        ),
-        (
-            ["activities/tracker/distance"],
-            "sensor.first_l_tracker_distance",
+            "sensor.distance",
             "activities/distance",
             "12.7",
         ),
         (
             ["activities/elevation"],
-            "sensor.first_l_elevation",
+            "sensor.elevation",
             "activities/elevation",
             "7600.24",
         ),
         (
             ["activities/floors"],
-            "sensor.first_l_floors",
+            "sensor.floors",
             "activities/floors",
             "8",
         ),
         (
             ["activities/heart"],
-            "sensor.first_l_resting_heart_rate",
+            "sensor.resting_heart_rate",
             "activities/heart",
             {"restingHeartRate": 76},
         ),
         (
             ["activities/minutesFairlyActive"],
-            "sensor.first_l_minutes_fairly_active",
+            "sensor.minutes_fairly_active",
             "activities/minutesFairlyActive",
             35,
         ),
         (
             ["activities/minutesLightlyActive"],
-            "sensor.first_l_minutes_lightly_active",
+            "sensor.minutes_lightly_active",
             "activities/minutesLightlyActive",
             95,
         ),
         (
             ["activities/minutesSedentary"],
-            "sensor.first_l_minutes_sedentary",
+            "sensor.minutes_sedentary",
             "activities/minutesSedentary",
             18,
         ),
         (
             ["activities/minutesVeryActive"],
-            "sensor.first_l_minutes_very_active",
+            "sensor.minutes_very_active",
             "activities/minutesVeryActive",
             20,
         ),
         (
             ["activities/steps"],
-            "sensor.first_l_steps",
+            "sensor.steps",
             "activities/steps",
             "5600",
         ),
         (
             ["body/weight"],
-            "sensor.first_l_weight",
+            "sensor.weight",
             "body/weight",
             "175",
         ),
         (
             ["body/fat"],
-            "sensor.first_l_body_fat",
+            "sensor.body_fat",
             "body/fat",
             "18",
         ),
         (
             ["body/bmi"],
-            "sensor.first_l_bmi",
+            "sensor.bmi",
             "body/bmi",
             "23.7",
         ),
         (
             ["sleep/awakeningsCount"],
-            "sensor.first_l_awakenings_count",
+            "sensor.awakenings_count",
             "sleep/awakeningsCount",
             "7",
         ),
         (
             ["sleep/efficiency"],
-            "sensor.first_l_sleep_efficiency",
+            "sensor.sleep_efficiency",
             "sleep/efficiency",
             "80",
         ),
         (
             ["sleep/minutesAfterWakeup"],
-            "sensor.first_l_minutes_after_wakeup",
+            "sensor.minutes_after_wakeup",
             "sleep/minutesAfterWakeup",
             "17",
         ),
         (
             ["sleep/minutesAsleep"],
-            "sensor.first_l_sleep_minutes_asleep",
+            "sensor.sleep_minutes_asleep",
             "sleep/minutesAsleep",
             "360",
         ),
         (
             ["sleep/minutesAwake"],
-            "sensor.first_l_sleep_minutes_awake",
+            "sensor.sleep_minutes_awake",
             "sleep/minutesAwake",
             "35",
         ),
         (
             ["sleep/minutesToFallAsleep"],
-            "sensor.first_l_sleep_minutes_to_fall_asleep",
+            "sensor.sleep_minutes_to_fall_asleep",
             "sleep/minutesToFallAsleep",
             "35",
         ),
         (
             ["sleep/startTime"],
-            "sensor.first_l_sleep_start_time",
+            "sensor.sleep_start_time",
             "sleep/startTime",
             "2020-01-27T00:17:30.000",
         ),
         (
             ["sleep/timeInBed"],
-            "sensor.first_l_sleep_time_in_bed",
+            "sensor.sleep_time_in_bed",
             "sleep/timeInBed",
             "462",
         ),
@@ -230,8 +212,8 @@ def mock_token_refresh(requests_mock: Mocker) -> None:
 )
 async def test_sensors(
     hass: HomeAssistant,
-    setup_credentials: None,
-    integration_setup: Callable[[], Awaitable[bool]],
+    fitbit_config_setup: None,
+    sensor_platform_setup: Callable[[], Awaitable[bool]],
     register_timeseries: Callable[[str, dict[str, Any]], None],
     entity_registry: er.EntityRegistry,
     entity_id: str,
@@ -244,7 +226,7 @@ async def test_sensors(
     register_timeseries(
         api_resource, timeseries_response(api_resource.replace("/", "-"), api_value)
     )
-    await integration_setup()
+    await sensor_platform_setup()
     entries = hass.config_entries.async_entries(DOMAIN)
     assert len(entries) == 1
 
@@ -261,13 +243,13 @@ async def test_sensors(
 )
 async def test_device_battery(
     hass: HomeAssistant,
-    setup_credentials: None,
-    integration_setup: Callable[[], Awaitable[bool]],
+    fitbit_config_setup: None,
+    sensor_platform_setup: Callable[[], Awaitable[bool]],
     entity_registry: er.EntityRegistry,
 ) -> None:
     """Test battery level sensor for devices."""
 
-    assert await integration_setup()
+    assert await sensor_platform_setup()
     entries = hass.config_entries.async_entries(DOMAIN)
     assert len(entries) == 1
 
@@ -308,13 +290,13 @@ async def test_device_battery(
 )
 async def test_device_battery_level(
     hass: HomeAssistant,
-    setup_credentials: None,
-    integration_setup: Callable[[], Awaitable[bool]],
+    fitbit_config_setup: None,
+    sensor_platform_setup: Callable[[], Awaitable[bool]],
     entity_registry: er.EntityRegistry,
 ) -> None:
     """Test battery level sensor for devices."""
 
-    assert await integration_setup()
+    assert await sensor_platform_setup()
     entries = hass.config_entries.async_entries(DOMAIN)
     assert len(entries) == 1
 
@@ -365,25 +347,25 @@ async def test_device_battery_level(
 )
 async def test_profile_local(
     hass: HomeAssistant,
-    setup_credentials: None,
-    integration_setup: Callable[[], Awaitable[bool]],
+    fitbit_config_setup: None,
+    sensor_platform_setup: Callable[[], Awaitable[bool]],
     register_timeseries: Callable[[str, dict[str, Any]], None],
     expected_unit: str,
 ) -> None:
     """Test the fitbit profile locale impact on unit of measure."""
 
     register_timeseries("body/weight", timeseries_response("body-weight", "175"))
-    await integration_setup()
+    await sensor_platform_setup()
     entries = hass.config_entries.async_entries(DOMAIN)
     assert len(entries) == 1
 
-    state = hass.states.get("sensor.first_l_weight")
+    state = hass.states.get("sensor.weight")
     assert state
     assert state.attributes.get("unit_of_measurement") == expected_unit
 
 
 @pytest.mark.parametrize(
-    ("imported_config_data", "api_response", "expected_state"),
+    ("sensor_platform_config", "api_response", "expected_state"),
     [
         (
             {"clock_format": "12H", "monitored_resources": ["sleep/startTime"]},
@@ -414,8 +396,8 @@ async def test_profile_local(
 )
 async def test_sleep_time_clock_format(
     hass: HomeAssistant,
-    setup_credentials: None,
-    integration_setup: Callable[[], Awaitable[bool]],
+    fitbit_config_setup: None,
+    sensor_platform_setup: Callable[[], Awaitable[bool]],
     register_timeseries: Callable[[str, dict[str, Any]], None],
     api_response: str,
     expected_state: str,
@@ -425,9 +407,9 @@ async def test_sleep_time_clock_format(
     register_timeseries(
         "sleep/startTime", timeseries_response("sleep-startTime", api_response)
     )
-    assert await integration_setup()
+    await sensor_platform_setup()
 
-    state = hass.states.get("sensor.first_l_sleep_start_time")
+    state = hass.states.get("sensor.sleep_start_time")
     assert state
     assert state.state == expected_state
 
@@ -463,16 +445,16 @@ async def test_activity_scope_config_entry(
 
     states = hass.states.async_all()
     assert {s.entity_id for s in states} == {
-        "sensor.first_l_activity_calories",
-        "sensor.first_l_calories",
-        "sensor.first_l_distance",
-        "sensor.first_l_elevation",
-        "sensor.first_l_floors",
-        "sensor.first_l_minutes_fairly_active",
-        "sensor.first_l_minutes_lightly_active",
-        "sensor.first_l_minutes_sedentary",
-        "sensor.first_l_minutes_very_active",
-        "sensor.first_l_steps",
+        "sensor.activity_calories",
+        "sensor.calories",
+        "sensor.distance",
+        "sensor.elevation",
+        "sensor.floors",
+        "sensor.minutes_fairly_active",
+        "sensor.minutes_lightly_active",
+        "sensor.minutes_sedentary",
+        "sensor.minutes_very_active",
+        "sensor.steps",
     }
 
 
@@ -496,7 +478,7 @@ async def test_heartrate_scope_config_entry(
 
     states = hass.states.async_all()
     assert {s.entity_id for s in states} == {
-        "sensor.first_l_resting_heart_rate",
+        "sensor.resting_heart_rate",
     }
 
 
@@ -524,11 +506,11 @@ async def test_nutrition_scope_config_entry(
     )
     assert await integration_setup()
 
-    state = hass.states.get("sensor.first_l_water")
+    state = hass.states.get("sensor.water")
     assert state
     assert (state.state, state.attributes) == snapshot
 
-    state = hass.states.get("sensor.first_l_calories_in")
+    state = hass.states.get("sensor.calories_in")
     assert state
     assert (state.state, state.attributes) == snapshot
 
@@ -563,14 +545,14 @@ async def test_sleep_scope_config_entry(
 
     states = hass.states.async_all()
     assert {s.entity_id for s in states} == {
-        "sensor.first_l_awakenings_count",
-        "sensor.first_l_sleep_efficiency",
-        "sensor.first_l_minutes_after_wakeup",
-        "sensor.first_l_sleep_minutes_asleep",
-        "sensor.first_l_sleep_minutes_awake",
-        "sensor.first_l_sleep_minutes_to_fall_asleep",
-        "sensor.first_l_sleep_time_in_bed",
-        "sensor.first_l_sleep_start_time",
+        "sensor.awakenings_count",
+        "sensor.sleep_efficiency",
+        "sensor.minutes_after_wakeup",
+        "sensor.sleep_minutes_asleep",
+        "sensor.sleep_minutes_awake",
+        "sensor.sleep_minutes_to_fall_asleep",
+        "sensor.sleep_time_in_bed",
+        "sensor.sleep_start_time",
     }
 
 
@@ -591,7 +573,7 @@ async def test_weight_scope_config_entry(
 
     states = hass.states.async_all()
     assert [s.entity_id for s in states] == [
-        "sensor.first_l_weight",
+        "sensor.weight",
     ]
 
 
@@ -641,7 +623,7 @@ async def test_sensor_update_failed(
 
     assert await integration_setup()
 
-    state = hass.states.get("sensor.first_l_resting_heart_rate")
+    state = hass.states.get("sensor.resting_heart_rate")
     assert state
     assert state.state == "unavailable"
 
@@ -673,7 +655,7 @@ async def test_sensor_update_failed_requires_reauth(
 
     assert await integration_setup()
 
-    state = hass.states.get("sensor.first_l_resting_heart_rate")
+    state = hass.states.get("sensor.resting_heart_rate")
     assert state
     assert state.state == "unavailable"
 
@@ -716,14 +698,14 @@ async def test_sensor_update_success(
 
     assert await integration_setup()
 
-    state = hass.states.get("sensor.first_l_resting_heart_rate")
+    state = hass.states.get("sensor.resting_heart_rate")
     assert state
     assert state.state == "60"
 
-    await async_update_entity(hass, "sensor.first_l_resting_heart_rate")
+    await async_update_entity(hass, "sensor.resting_heart_rate")
     await hass.async_block_till_done()
 
-    state = hass.states.get("sensor.first_l_resting_heart_rate")
+    state = hass.states.get("sensor.resting_heart_rate")
     assert state
     assert state.state == "70"
 
@@ -885,6 +867,6 @@ async def test_resting_heart_rate_responses(
     )
     assert await integration_setup()
 
-    state = hass.states.get("sensor.first_l_resting_heart_rate")
+    state = hass.states.get("sensor.resting_heart_rate")
     assert state
     assert state.state == expected_state

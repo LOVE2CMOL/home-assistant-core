@@ -29,26 +29,11 @@
     "preferences": {
       "sleep": false,
       "automaticAllocation": false,
-      "disableClasses": false,
-      "language": "en"
+      "disableClasses": false
     },
     "flags": {
       "classSelected": true
     },
-    "needsCron": false,
-    "items": {
-      "gear": {
-        "equipped": {
-          "weapon": "weapon_warrior_5",
-          "armor": "armor_warrior_5",
-          "head": "head_warrior_5",
-          "shield": "shield_warrior_5",
-          "back": "heroicAureole",
-          "headAccessory": "headAccessory_armoire_gogglesOfBookbinding",
-          "eyewear": "plagueDoctorMask",
-          "body": "aetherAmulet"
-        }
-      }
-    }
+    "needsCron": false
   }
 }

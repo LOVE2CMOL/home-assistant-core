@@ -180,7 +180,6 @@ def _rest_coordinator(
     return DataUpdateCoordinator(
         hass,
         _LOGGER,
-        config_entry=None,
         name="rest data",
         update_method=update_method,
         update_interval=update_interval,

@@ -3,7 +3,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Create generic thermostat",
+        "title": "Add generic thermostat",
         "description": "Create a climate entity that controls the temperature via a switch and sensor.",
         "data": {
           "ac_mode": "Cooling mode",

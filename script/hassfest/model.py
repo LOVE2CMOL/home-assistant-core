@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import IntEnum
 import json
 import pathlib
 from typing import Any, Literal
@@ -231,12 +230,3 @@ class Integration:
 
         self._manifest = manifest
         self.manifest_path = manifest_path
-
-
-class ScaledQualityScaleTiers(IntEnum):
-    """Supported manifest quality scales."""
-
-    BRONZE = 1
-    SILVER = 2
-    GOLD = 3
-    PLATINUM = 4

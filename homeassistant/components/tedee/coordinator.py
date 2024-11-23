@@ -8,7 +8,7 @@ import logging
 import time
 from typing import Any
 
-from aiotedee import (
+from pytedee_async import (
     TedeeClient,
     TedeeClientException,
     TedeeDataUpdateException,
@@ -16,7 +16,7 @@ from aiotedee import (
     TedeeLock,
     TedeeWebhookException,
 )
-from aiotedee.bridge import TedeeBridge
+from pytedee_async.bridge import TedeeBridge
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
@@ -99,19 +99,14 @@ class TedeeApiCoordinator(DataUpdateCoordinator[dict[int, TedeeLock]]):
             await update_fn()
         except TedeeLocalAuthException as ex:
             raise ConfigEntryAuthFailed(
-                translation_domain=DOMAIN,
-                translation_key="authentification_failed",
+                "Authentication failed. Local access token is invalid"
             ) from ex
 
         except TedeeDataUpdateException as ex:
             _LOGGER.debug("Error while updating data: %s", str(ex))
-            raise UpdateFailed(
-                translation_domain=DOMAIN, translation_key="update_failed"
-            ) from ex
+            raise UpdateFailed(f"Error while updating data: {ex!s}") from ex
         except (TedeeClientException, TimeoutError) as ex:
-            raise UpdateFailed(
-                translation_domain=DOMAIN, translation_key="api_error"
-            ) from ex
+            raise UpdateFailed(f"Querying API failed. Error: {ex!s}") from ex
 
     def webhook_received(self, message: dict[str, Any]) -> None:
         """Handle webhook message."""

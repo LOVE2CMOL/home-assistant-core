@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from pylamarzocco.const import MachineModel
+from lmcloud.const import MachineModel
 import pytest
 from syrupy import SnapshotAssertion
 

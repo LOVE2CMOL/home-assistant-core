@@ -176,19 +176,23 @@ class PlaatoConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> PlaatoOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> PlaatoOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return PlaatoOptionsFlowHandler()
+        return PlaatoOptionsFlowHandler(config_entry)
 
 
 class PlaatoOptionsFlowHandler(OptionsFlow):
     """Handle Plaato options."""
 
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize domain options flow."""
+        super().__init__()
+
+        self._config_entry = config_entry
+
     async def async_step_init(self, user_input: None = None) -> ConfigFlowResult:
         """Manage the options."""
-        use_webhook = self.config_entry.data.get(CONF_USE_WEBHOOK, False)
+        use_webhook = self._config_entry.data.get(CONF_USE_WEBHOOK, False)
         if use_webhook:
             return await self.async_step_webhook()
 
@@ -207,7 +211,7 @@ class PlaatoOptionsFlowHandler(OptionsFlow):
                 {
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
-                        default=self.config_entry.options.get(
+                        default=self._config_entry.options.get(
                             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                         ),
                     ): cv.positive_int
@@ -222,7 +226,7 @@ class PlaatoOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        webhook_id = self.config_entry.data.get(CONF_WEBHOOK_ID, None)
+        webhook_id = self._config_entry.data.get(CONF_WEBHOOK_ID, None)
         webhook_url = (
             ""
             if webhook_id is None

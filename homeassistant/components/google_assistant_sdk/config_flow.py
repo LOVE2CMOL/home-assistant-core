@@ -66,6 +66,10 @@ class OAuth2FlowHandler(
                 self._get_reauth_entry(), data=data
             )
 
+        if self._async_current_entries():
+            # Config entry already exists, only one allowed.
+            return self.async_abort(reason="single_instance_allowed")
+
         return self.async_create_entry(
             title=DEFAULT_NAME,
             data=data,
@@ -80,11 +84,15 @@ class OAuth2FlowHandler(
         config_entry: ConfigEntry,
     ) -> OptionsFlow:
         """Create the options flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
 
 class OptionsFlowHandler(OptionsFlow):
     """Google Assistant SDK options flow."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

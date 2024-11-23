@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from hassil.recognize import RecognizeResult
-from hassil.util import PUNCTUATION_ALL
+from hassil.recognize import PUNCTUATION, RecognizeResult
 import voluptuous as vol
 
 from homeassistant.const import CONF_COMMAND, CONF_PLATFORM
@@ -21,7 +20,7 @@ from .const import DATA_DEFAULT_ENTITY, DOMAIN
 def has_no_punctuation(value: list[str]) -> list[str]:
     """Validate result does not contain punctuation."""
     for sentence in value:
-        if PUNCTUATION_ALL.search(sentence):
+        if PUNCTUATION.search(sentence):
             raise vol.Invalid("sentence should not contain punctuation")
 
     return value

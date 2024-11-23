@@ -10,9 +10,8 @@ from pysensibo import SensiboClient
 from pysensibo.model import SensiboData
 import pytest
 
-from homeassistant.components.sensibo.const import DOMAIN, PLATFORMS
+from homeassistant.components.sensibo.const import DOMAIN
 from homeassistant.config_entries import SOURCE_USER
-from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from . import ENTRY_CONFIG
@@ -21,18 +20,8 @@ from tests.common import MockConfigEntry, load_fixture
 from tests.test_util.aiohttp import AiohttpClientMocker
 
 
-@pytest.fixture(name="load_platforms")
-async def patch_platform_constant() -> list[Platform]:
-    """Return list of platforms to load."""
-    return PLATFORMS
-
-
 @pytest.fixture
-async def load_int(
-    hass: HomeAssistant,
-    get_data: SensiboData,
-    load_platforms: list[Platform],
-) -> MockConfigEntry:
+async def load_int(hass: HomeAssistant, get_data: SensiboData) -> MockConfigEntry:
     """Set up the Sensibo integration in Home Assistant."""
     config_entry = MockConfigEntry(
         domain=DOMAIN,
@@ -46,7 +35,6 @@ async def load_int(
     config_entry.add_to_hass(hass)
 
     with (
-        patch("homeassistant.components.sensibo.PLATFORMS", load_platforms),
         patch(
             "homeassistant.components.sensibo.coordinator.SensiboClient.async_get_devices_data",
             return_value=get_data,

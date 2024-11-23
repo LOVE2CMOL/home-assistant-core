@@ -5,7 +5,6 @@ from unittest.mock import PropertyMock, patch
 import pytest
 
 from homeassistant.components import media_source
-from homeassistant.components.camera import CameraCapabilities
 from homeassistant.components.camera.const import StreamType
 from homeassistant.components.stream import FORMAT_CONTENT_TYPE
 from homeassistant.core import HomeAssistant
@@ -92,7 +91,7 @@ async def test_browsing_webrtc(hass: HomeAssistant) -> None:
         assert item.children[0].media_content_type == FORMAT_CONTENT_TYPE["hls"]
 
 
-@pytest.mark.usefixtures("mock_camera")
+@pytest.mark.usefixtures("mock_camera_hls")
 async def test_resolving(hass: HomeAssistant) -> None:
     """Test resolving."""
     # Adding stream enables HLS camera
@@ -110,7 +109,7 @@ async def test_resolving(hass: HomeAssistant) -> None:
     assert item.mime_type == FORMAT_CONTENT_TYPE["hls"]
 
 
-@pytest.mark.usefixtures("mock_camera")
+@pytest.mark.usefixtures("mock_camera_hls")
 async def test_resolving_errors(hass: HomeAssistant) -> None:
     """Test resolving."""
 
@@ -131,10 +130,8 @@ async def test_resolving_errors(hass: HomeAssistant) -> None:
     with (
         pytest.raises(media_source.Unresolvable) as exc_info,
         patch(
-            "homeassistant.components.camera.Camera.camera_capabilities",
-            new_callable=PropertyMock(
-                return_value=CameraCapabilities({StreamType.WEB_RTC})
-            ),
+            "homeassistant.components.camera.Camera.frontend_stream_type",
+            new_callable=PropertyMock(return_value=StreamType.WEB_RTC),
         ),
     ):
         await media_source.async_resolve_media(

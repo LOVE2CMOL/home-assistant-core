@@ -216,22 +216,22 @@
         "name": "Air quality index"
       },
       "filter_life_remaining": {
-        "name": "Filter life remaining"
+        "name": "Filter lifetime remaining"
       },
       "filter_hours_used": {
         "name": "Filter use"
       },
       "filter_left_time": {
-        "name": "Filter lifetime remaining"
+        "name": "Filter lifetime left"
       },
       "dust_filter_life_remaining": {
-        "name": "Dust filter life remaining"
+        "name": "Dust filter lifetime remaining"
       },
       "dust_filter_life_remaining_days": {
         "name": "Dust filter lifetime remaining days"
       },
       "upper_filter_life_remaining": {
-        "name": "Upper filter life remaining"
+        "name": "Upper filter lifetime remaining"
       },
       "upper_filter_life_remaining_days": {
         "name": "Upper filter lifetime remaining days"
@@ -276,16 +276,16 @@
         "name": "Total dust collection count"
       },
       "main_brush_left": {
-        "name": "Main brush remaining"
+        "name": "Main brush left"
       },
       "side_brush_left": {
-        "name": "Side brush remaining"
+        "name": "Side brush left"
       },
       "filter_left": {
-        "name": "Filter remaining"
+        "name": "Filter left"
       },
       "sensor_dirty_left": {
-        "name": "Sensor dirty remaining"
+        "name": "Sensor dirty left"
       }
     },
     "switch": {

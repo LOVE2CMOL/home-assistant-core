@@ -37,8 +37,6 @@ from .util import valid_subscribe_topic
 
 _LOGGER = logging.getLogger(__name__)
 
-PARALLEL_UPDATES = 0
-
 CONF_CONTENT_TYPE = "content_type"
 CONF_IMAGE_ENCODING = "image_encoding"
 CONF_IMAGE_TOPIC = "image_topic"

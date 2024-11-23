@@ -402,10 +402,9 @@ class OptionsFlowHandler(OptionsFlow):
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
-        self.model = config_entry.data[CONF_MODEL]
-        self.current_opt = (
-            config_entry.options or config_entry.data[CONF_DEFAULT_OPTIONS]
-        )
+        self.entry = config_entry
+        self.model = self.entry.data[CONF_MODEL]
+        self.current_opt = self.entry.options or self.entry.data[CONF_DEFAULT_OPTIONS]
 
         # as config proceeds we'll build up new options and then replace what's in the config entry
         self.new_opt: dict[str, Any] = {CONF_IO: {}}
@@ -476,7 +475,7 @@ class OptionsFlowHandler(OptionsFlow):
                 ),
                 description_placeholders={
                     "model": KONN_PANEL_MODEL_NAMES[self.model],
-                    "host": self.config_entry.data[CONF_HOST],
+                    "host": self.entry.data[CONF_HOST],
                 },
                 errors=errors,
             )
@@ -512,7 +511,7 @@ class OptionsFlowHandler(OptionsFlow):
                 ),
                 description_placeholders={
                     "model": KONN_PANEL_MODEL_NAMES[self.model],
-                    "host": self.config_entry.data[CONF_HOST],
+                    "host": self.entry.data[CONF_HOST],
                 },
                 errors=errors,
             )
@@ -572,7 +571,7 @@ class OptionsFlowHandler(OptionsFlow):
                 ),
                 description_placeholders={
                     "model": KONN_PANEL_MODEL_NAMES[self.model],
-                    "host": self.config_entry.data[CONF_HOST],
+                    "host": self.entry.data[CONF_HOST],
                 },
                 errors=errors,
             )

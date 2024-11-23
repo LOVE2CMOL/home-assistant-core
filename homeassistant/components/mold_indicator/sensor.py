@@ -22,7 +22,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_UNIQUE_ID,
     PERCENTAGE,
-    STATE_UNAVAILABLE,
     STATE_UNKNOWN,
     UnitOfTemperature,
 )
@@ -38,7 +37,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device import async_device_info_to_link_from_entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, StateType
 from homeassistant.util.unit_conversion import TemperatureConverter
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
@@ -151,6 +150,7 @@ class MoldIndicator(SensorEntity):
         unique_id: str | None,
     ) -> None:
         """Initialize the sensor."""
+        self._state: str | None = None
         self._attr_name = name
         self._attr_unique_id = unique_id
         self._indoor_temp_sensor = indoor_temp_sensor
@@ -272,7 +272,7 @@ class MoldIndicator(SensorEntity):
                 # re-calculate dewpoint and mold indicator
                 self._calc_dewpoint()
                 self._calc_moldindicator()
-                if self._attr_native_value is None:
+                if self._state is None:
                     self._attr_available = False
                 else:
                     self._attr_available = True
@@ -311,13 +311,15 @@ class MoldIndicator(SensorEntity):
         _LOGGER.debug("Updating temp sensor with value %s", state.state)
 
         # Return an error if the sensor change its state to Unknown.
-        if state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+        if state.state == STATE_UNKNOWN:
             _LOGGER.error(
                 "Unable to parse temperature sensor %s with state: %s",
                 state.entity_id,
                 state.state,
             )
             return None
+
+        unit = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
 
         if (temp := util.convert(state.state, float)) is None:
             _LOGGER.error(
@@ -328,10 +330,12 @@ class MoldIndicator(SensorEntity):
             return None
 
         # convert to celsius if necessary
-        if (
-            unit := state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
-        ) in UnitOfTemperature:
-            return TemperatureConverter.convert(temp, unit, UnitOfTemperature.CELSIUS)
+        if unit == UnitOfTemperature.FAHRENHEIT:
+            return TemperatureConverter.convert(
+                temp, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS
+            )
+        if unit == UnitOfTemperature.CELSIUS:
+            return temp
         _LOGGER.error(
             "Temp sensor %s has unsupported unit: %s (allowed: %s, %s)",
             state.entity_id,
@@ -348,7 +352,7 @@ class MoldIndicator(SensorEntity):
         _LOGGER.debug("Updating humidity sensor with value %s", state.state)
 
         # Return an error if the sensor change its state to Unknown.
-        if state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+        if state.state == STATE_UNKNOWN:
             _LOGGER.error(
                 "Unable to parse humidity sensor %s, state: %s",
                 state.entity_id,
@@ -366,18 +370,19 @@ class MoldIndicator(SensorEntity):
 
         if (unit := state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)) != PERCENTAGE:
             _LOGGER.error(
-                "Humidity sensor %s has unsupported unit: %s (allowed: %s)",
+                "Humidity sensor %s has unsupported unit: %s %s",
                 state.entity_id,
                 unit,
-                PERCENTAGE,
+                " (allowed: %)",
             )
             return None
 
         if hum > 100 or hum < 0:
             _LOGGER.error(
-                "Humidity sensor %s is out of range: %s (allowed: 0-100)",
+                "Humidity sensor %s is out of range: %s %s",
                 state.entity_id,
                 hum,
+                "(allowed: 0-100%)",
             )
             return None
 
@@ -396,7 +401,7 @@ class MoldIndicator(SensorEntity):
         # re-calculate dewpoint and mold indicator
         self._calc_dewpoint()
         self._calc_moldindicator()
-        if self._attr_native_value is None:
+        if self._state is None:
             self._attr_available = False
             self._dewpoint = None
             self._crit_temp = None
@@ -432,7 +437,7 @@ class MoldIndicator(SensorEntity):
                 self._dewpoint,
                 self._calib_factor,
             )
-            self._attr_native_value = None
+            self._state = None
             self._attr_available = False
             self._crit_temp = None
             return
@@ -463,13 +468,18 @@ class MoldIndicator(SensorEntity):
 
         # check bounds and format
         if crit_humidity > 100:
-            self._attr_native_value = "100"
+            self._state = "100"
         elif crit_humidity < 0:
-            self._attr_native_value = "0"
+            self._state = "0"
         else:
-            self._attr_native_value = f"{int(crit_humidity):d}"
+            self._state = f"{int(crit_humidity):d}"
 
-        _LOGGER.debug("Mold indicator humidity: %s", self.native_value)
+        _LOGGER.debug("Mold indicator humidity: %s", self._state)
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the state of the entity."""
+        return self._state
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

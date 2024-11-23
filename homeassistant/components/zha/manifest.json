@@ -130,10 +130,6 @@
     {
       "type": "_czc._tcp.local.",
       "name": "czc*"
-    },
-    {
-      "type": "_zigbee-coordinator._tcp.local.",
-      "name": "*"
     }
   ]
 }

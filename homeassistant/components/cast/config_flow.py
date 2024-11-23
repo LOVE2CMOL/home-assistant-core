@@ -41,7 +41,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> CastOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return CastOptionsFlowHandler()
+        return CastOptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -109,8 +109,9 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
 class CastOptionsFlowHandler(OptionsFlow):
     """Handle Google Cast options."""
 
-    def __init__(self) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize Google Cast options flow."""
+        self.config_entry = config_entry
         self.updated_config: dict[str, Any] = {}
 
     async def async_step_init(self, user_input: None = None) -> ConfigFlowResult:

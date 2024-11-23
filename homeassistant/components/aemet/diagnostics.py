@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 
-from .coordinator import AemetConfigEntry
+from . import AemetConfigEntry
 
 TO_REDACT_CONFIG = [
     CONF_API_KEY,

@@ -34,7 +34,7 @@ class WiffiFlowHandler(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Create Wiffi server setup option flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -78,6 +78,10 @@ class WiffiFlowHandler(ConfigFlow, domain=DOMAIN):
 
 class OptionsFlowHandler(OptionsFlow):
     """Wiffi server setup option flow."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, int] | None = None

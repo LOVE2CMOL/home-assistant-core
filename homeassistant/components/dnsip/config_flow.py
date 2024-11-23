@@ -14,7 +14,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_NAME, CONF_PORT
 from homeassistant.core import callback
@@ -101,7 +101,7 @@ class DnsIPConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> DnsIPOptionsFlowHandler:
         """Return Option handler."""
-        return DnsIPOptionsFlowHandler()
+        return DnsIPOptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -165,7 +165,7 @@ class DnsIPConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
-class DnsIPOptionsFlowHandler(OptionsFlow):
+class DnsIPOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle a option config flow for dnsip integration."""
 
     async def async_step_init(

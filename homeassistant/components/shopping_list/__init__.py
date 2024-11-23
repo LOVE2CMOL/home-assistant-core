@@ -320,15 +320,15 @@ class ShoppingData:
             # Remove the item from mapping after it's appended in the result array.
             del all_items_mapping[item_id]
         # Append the rest of the items
-        for value in all_items_mapping.values():
+        for key in all_items_mapping:
             # All the unchecked items must be passed in the item_ids array,
             # so all items left in the mapping should be checked items.
-            if value["complete"] is False:
+            if all_items_mapping[key]["complete"] is False:
                 raise vol.Invalid(
                     "The item ids array doesn't contain all the unchecked shopping list"
                     " items."
                 )
-            new_items.append(value)
+            new_items.append(all_items_mapping[key])
         self.items = new_items
         self.hass.async_add_executor_job(self.save)
         self._async_notify()

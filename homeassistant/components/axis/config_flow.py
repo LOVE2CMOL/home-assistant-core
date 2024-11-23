@@ -18,7 +18,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import (
     CONF_HOST,
@@ -59,11 +59,9 @@ class AxisFlowHandler(ConfigFlow, domain=AXIS_DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> AxisOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> AxisOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return AxisOptionsFlowHandler()
+        return AxisOptionsFlowHandler(config_entry)
 
     def __init__(self) -> None:
         """Initialize the Axis config flow."""
@@ -266,7 +264,7 @@ class AxisFlowHandler(ConfigFlow, domain=AXIS_DOMAIN):
         return await self.async_step_user()
 
 
-class AxisOptionsFlowHandler(OptionsFlow):
+class AxisOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle Axis device options."""
 
     config_entry: AxisConfigEntry
@@ -284,7 +282,8 @@ class AxisOptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the Axis device stream options."""
         if user_input is not None:
-            return self.async_create_entry(data=self.config_entry.options | user_input)
+            self.options.update(user_input)
+            return self.async_create_entry(title="", data=self.options)
 
         schema = {}
 

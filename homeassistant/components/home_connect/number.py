@@ -11,11 +11,13 @@ from homeassistant.components.number import (
     NumberEntity,
     NumberEntityDescription,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import HomeConnectConfigEntry, get_dict_from_home_connect_error
+from . import get_dict_from_home_connect_error
+from .api import ConfigEntryAuth
 from .const import (
     ATTR_CONSTRAINTS,
     ATTR_STEPSIZE,
@@ -82,17 +84,18 @@ NUMBERS = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: HomeConnectConfigEntry,
+    config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Home Connect number."""
 
     def get_entities() -> list[HomeConnectNumberEntity]:
         """Get a list of entities."""
+        hc_api: ConfigEntryAuth = hass.data[DOMAIN][config_entry.entry_id]
         return [
             HomeConnectNumberEntity(device, description)
             for description in NUMBERS
-            for device in entry.runtime_data.devices
+            for device in hc_api.devices
             if description.key in device.appliance.status
         ]
 

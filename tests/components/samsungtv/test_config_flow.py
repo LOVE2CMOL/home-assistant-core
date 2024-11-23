@@ -14,9 +14,6 @@ from samsungtvws.exceptions import (
     UnauthorizedError,
 )
 from websockets import frames
-
-# WebSocketProtocolError was deprecated in websockets '14.0'
-# pylint: disable-next=no-name-in-module
 from websockets.exceptions import (
     ConnectionClosedError,
     WebSocketException,

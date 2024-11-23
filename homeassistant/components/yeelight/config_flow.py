@@ -58,11 +58,9 @@ class YeelightConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> OptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowHandler:
         """Return the options flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -298,12 +296,16 @@ class YeelightConfigFlow(ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(OptionsFlow):
     """Handle a option flow for Yeelight."""
 
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize the option flow."""
+        self._config_entry = config_entry
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
-        data = self.config_entry.data
-        options = self.config_entry.options
+        data = self._config_entry.data
+        options = self._config_entry.options
         detected_model = data.get(CONF_DETECTED_MODEL)
         model = options[CONF_MODEL] or detected_model
 

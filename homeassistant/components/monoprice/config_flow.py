@@ -108,7 +108,7 @@ class MonoPriceConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> MonopriceOptionsFlowHandler:
         """Define the config flow to handle options."""
-        return MonopriceOptionsFlowHandler()
+        return MonopriceOptionsFlowHandler(config_entry)
 
 
 @callback
@@ -125,6 +125,10 @@ def _key_for_source(index, source, previous_sources):
 
 class MonopriceOptionsFlowHandler(OptionsFlow):
     """Handle a Monoprice options flow."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize."""
+        self.config_entry = config_entry
 
     @callback
     def _previous_sources(self):

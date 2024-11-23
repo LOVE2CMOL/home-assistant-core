@@ -79,6 +79,7 @@ def __get_date(date_input: str | None, mode: str | None) -> datetime:
         return dt_util.as_local(value)
 
     raise ServiceValidationError(
+        "Invalid datetime provided.",
         translation_domain=DOMAIN,
         translation_key="invalid_date",
         translation_placeholders={

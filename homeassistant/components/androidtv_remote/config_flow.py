@@ -20,7 +20,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_HOST, CONF_MAC, CONF_NAME
 from homeassistant.core import callback
@@ -221,12 +221,13 @@ class AndroidTVRemoteConfigFlow(ConfigFlow, domain=DOMAIN):
         return AndroidTVRemoteOptionsFlowHandler(config_entry)
 
 
-class AndroidTVRemoteOptionsFlowHandler(OptionsFlow):
+class AndroidTVRemoteOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Android TV Remote options flow."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
-        self._apps: dict[str, Any] = dict(config_entry.options.get(CONF_APPS, {}))
+        super().__init__(config_entry)
+        self._apps: dict[str, Any] = self.options.setdefault(CONF_APPS, {})
         self._conf_app_id: str | None = None
 
     @callback

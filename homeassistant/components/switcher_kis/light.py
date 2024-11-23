@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any, cast
 
-from aioswitcher.api import SwitcherApi, SwitcherBaseResponse
+from aioswitcher.api import SwitcherBaseResponse, SwitcherType2Api
 from aioswitcher.device import DeviceCategory, DeviceState, SwitcherLight
 
 from homeassistant.components.light import ColorMode, LightEntity
@@ -35,20 +35,16 @@ async def async_setup_entry(
     def async_add_light(coordinator: SwitcherDataUpdateCoordinator) -> None:
         """Add light from Switcher device."""
         entities: list[LightEntity] = []
-
-        if coordinator.data.device_type.category in (
-            DeviceCategory.SINGLE_SHUTTER_DUAL_LIGHT,
-            DeviceCategory.DUAL_SHUTTER_SINGLE_LIGHT,
-            DeviceCategory.LIGHT,
+        if (
+            coordinator.data.device_type.category
+            == DeviceCategory.SINGLE_SHUTTER_DUAL_LIGHT
         ):
-            number_of_lights = len(cast(SwitcherLight, coordinator.data).light)
-            if number_of_lights == 1:
-                entities.append(SwitcherSingleLightEntity(coordinator, 0))
-            else:
-                entities.extend(
-                    SwitcherMultiLightEntity(coordinator, i)
-                    for i in range(number_of_lights)
-                )
+            entities.extend(SwitcherDualLightEntity(coordinator, i) for i in range(2))
+        if (
+            coordinator.data.device_type.category
+            == DeviceCategory.DUAL_SHUTTER_SINGLE_LIGHT
+        ):
+            entities.append(SwitcherSingleLightEntity(coordinator, 0))
         async_add_entities(entities)
 
     config_entry.async_on_unload(
@@ -86,7 +82,7 @@ class SwitcherBaseLightEntity(SwitcherEntity, LightEntity):
         error = None
 
         try:
-            async with SwitcherApi(
+            async with SwitcherType2Api(
                 self.coordinator.data.device_type,
                 self.coordinator.data.ip_address,
                 self.coordinator.data.device_id,
@@ -137,8 +133,8 @@ class SwitcherSingleLightEntity(SwitcherBaseLightEntity):
         self._attr_unique_id = f"{coordinator.device_id}-{coordinator.mac_address}"
 
 
-class SwitcherMultiLightEntity(SwitcherBaseLightEntity):
-    """Representation of a Switcher multiple light entity."""
+class SwitcherDualLightEntity(SwitcherBaseLightEntity):
+    """Representation of a Switcher dual light entity."""
 
     _attr_translation_key = "light"
 

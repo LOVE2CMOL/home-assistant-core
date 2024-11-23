@@ -18,7 +18,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import CONF_PASSKEY
 from .coordinator import BSBLanUpdateCoordinator
 
-PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.WATER_HEATER]
+PLATFORMS = [Platform.CLIMATE, Platform.SENSOR]
 
 type BSBLanConfigEntry = ConfigEntry[BSBLanData]
 

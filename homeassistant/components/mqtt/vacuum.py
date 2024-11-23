@@ -39,8 +39,6 @@ from .models import ReceiveMessage
 from .schemas import MQTT_ENTITY_COMMON_SCHEMA
 from .util import valid_publish_topic
 
-PARALLEL_UPDATES = 0
-
 BATTERY = "battery_level"
 FAN_SPEED = "fan_speed"
 STATE = "state"

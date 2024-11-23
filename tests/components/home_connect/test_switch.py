@@ -162,7 +162,7 @@ async def test_switch_functionality(
             SERVICE_TURN_OFF,
             "set_setting",
             "Dishwasher",
-            r"Error.*turn.*off.*",
+            r"Error.*turn.*off.*appliance.*value",
         ),
         (
             "switch.dishwasher_power",
@@ -170,7 +170,7 @@ async def test_switch_functionality(
             SERVICE_TURN_ON,
             "set_setting",
             "Dishwasher",
-            r"Error.*turn.*on.*",
+            r"Error.*turn.*on.*appliance.*",
         ),
         (
             "switch.dishwasher_child_lock",
@@ -178,7 +178,7 @@ async def test_switch_functionality(
             SERVICE_TURN_ON,
             "set_setting",
             "Dishwasher",
-            r"Error.*turn.*on.*",
+            r"Error.*turn.*on.*key.*",
         ),
         (
             "switch.dishwasher_child_lock",
@@ -186,7 +186,7 @@ async def test_switch_functionality(
             SERVICE_TURN_OFF,
             "set_setting",
             "Dishwasher",
-            r"Error.*turn.*off.*",
+            r"Error.*turn.*off.*key.*",
         ),
     ],
     indirect=["problematic_appliance"],
@@ -297,7 +297,7 @@ async def test_ent_desc_switch_functionality(
             SERVICE_TURN_ON,
             "set_setting",
             "FridgeFreezer",
-            r"Error.*turn.*on.*",
+            r"Error.*turn.*on.*key.*",
         ),
         (
             "switch.fridgefreezer_freezer_super_mode",
@@ -305,7 +305,7 @@ async def test_ent_desc_switch_functionality(
             SERVICE_TURN_OFF,
             "set_setting",
             "FridgeFreezer",
-            r"Error.*turn.*off.*",
+            r"Error.*turn.*off.*key.*",
         ),
     ],
     indirect=["problematic_appliance"],

@@ -24,8 +24,6 @@ class SongpalConfig:
     def __init__(self, name: str, host: str | None, endpoint: str) -> None:
         """Initialize Configuration."""
         self.name = name
-        if TYPE_CHECKING:
-            assert host is not None
         self.host = host
         self.endpoint = endpoint
 

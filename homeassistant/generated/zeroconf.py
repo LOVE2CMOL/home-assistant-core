@@ -639,11 +639,6 @@ ZEROCONF = {
             },
         },
     ],
-    "_mass._tcp.local.": [
-        {
-            "domain": "music_assistant",
-        },
-    ],
     "_matter._tcp.local.": [
         {
             "domain": "matter",
@@ -870,12 +865,6 @@ ZEROCONF = {
         {
             "domain": "zha",
             "name": "*zigate*",
-        },
-    ],
-    "_zigbee-coordinator._tcp.local.": [
-        {
-            "domain": "zha",
-            "name": "*",
         },
     ],
     "_zigstar_gw._tcp.local.": [

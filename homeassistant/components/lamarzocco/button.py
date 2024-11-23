@@ -1,11 +1,11 @@
 """Button platform for La Marzocco espresso machines."""
 
-import asyncio
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import Any
 
-from pylamarzocco.exceptions import RequestNotSuccessful
+from lmcloud.exceptions import RequestNotSuccessful
+from lmcloud.lm_machine import LaMarzoccoMachine
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
@@ -13,10 +13,8 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .coordinator import LaMarzoccoConfigEntry, LaMarzoccoUpdateCoordinator
+from .coordinator import LaMarzoccoConfigEntry
 from .entity import LaMarzoccoEntity, LaMarzoccoEntityDescription
-
-BACKFLUSH_ENABLED_DURATION = 15
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -26,25 +24,14 @@ class LaMarzoccoButtonEntityDescription(
 ):
     """Description of a La Marzocco button."""
 
-    press_fn: Callable[[LaMarzoccoUpdateCoordinator], Coroutine[Any, Any, None]]
-
-
-async def async_backflush_and_update(coordinator: LaMarzoccoUpdateCoordinator) -> None:
-    """Press backflush button."""
-    await coordinator.device.start_backflush()
-    # lib will set state optimistically
-    coordinator.async_set_updated_data(None)
-    # backflush is enabled for 15 seconds
-    # then turns off automatically
-    await asyncio.sleep(BACKFLUSH_ENABLED_DURATION + 1)
-    await coordinator.async_request_refresh()
+    press_fn: Callable[[LaMarzoccoMachine], Coroutine[Any, Any, None]]
 
 
 ENTITIES: tuple[LaMarzoccoButtonEntityDescription, ...] = (
     LaMarzoccoButtonEntityDescription(
         key="start_backflush",
         translation_key="start_backflush",
-        press_fn=async_backflush_and_update,
+        press_fn=lambda machine: machine.start_backflush(),
     ),
 )
 
@@ -72,7 +59,7 @@ class LaMarzoccoButtonEntity(LaMarzoccoEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press button."""
         try:
-            await self.entity_description.press_fn(self.coordinator)
+            await self.entity_description.press_fn(self.coordinator.device)
         except RequestNotSuccessful as exc:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
@@ -81,3 +68,4 @@ class LaMarzoccoButtonEntity(LaMarzoccoEntity, ButtonEntity):
                     "key": self.entity_description.key,
                 },
             ) from exc
+        await self.coordinator.async_request_refresh()

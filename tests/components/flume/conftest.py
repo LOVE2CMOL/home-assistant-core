@@ -3,7 +3,8 @@
 from collections.abc import Generator
 import datetime
 from http import HTTPStatus
-from unittest.mock import patch
+import json
+from unittest.mock import mock_open, patch
 
 import jwt
 import pytest
@@ -115,7 +116,7 @@ def access_token_fixture(requests_mock: Mocker) -> Generator[None]:
         status_code=HTTPStatus.OK,
         json={"data": [token_response]},
     )
-    with patch("homeassistant.components.flume.coordinator.FlumeAuth.write_token_file"):
+    with patch("builtins.open", mock_open(read_data=json.dumps(token_response))):
         yield
 
 

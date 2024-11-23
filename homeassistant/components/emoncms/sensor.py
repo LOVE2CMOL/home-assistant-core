@@ -138,30 +138,29 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the emoncms sensors."""
-    name = sensor_name(entry.data[CONF_URL])
-    exclude_feeds = entry.data.get(CONF_EXCLUDE_FEEDID)
-    include_only_feeds = entry.options.get(
-        CONF_ONLY_INCLUDE_FEEDID, entry.data.get(CONF_ONLY_INCLUDE_FEEDID)
-    )
+    config = entry.options if entry.options else entry.data
+    name = sensor_name(config[CONF_URL])
+    exclude_feeds = config.get(CONF_EXCLUDE_FEEDID)
+    include_only_feeds = config.get(CONF_ONLY_INCLUDE_FEEDID)
 
     if exclude_feeds is None and include_only_feeds is None:
         return
 
     coordinator = entry.runtime_data
-    # uuid was added in emoncms database 11.5.7
-    unique_id = entry.unique_id if entry.unique_id else entry.entry_id
     elems = coordinator.data
     if not elems:
         return
+
     sensors: list[EmonCmsSensor] = []
 
     for idx, elem in enumerate(elems):
         if include_only_feeds is not None and elem[FEED_ID] not in include_only_feeds:
             continue
+
         sensors.append(
             EmonCmsSensor(
                 coordinator,
-                unique_id,
+                entry.entry_id,
                 elem["unit"],
                 name,
                 idx,
@@ -176,7 +175,7 @@ class EmonCmsSensor(CoordinatorEntity[EmoncmsCoordinator], SensorEntity):
     def __init__(
         self,
         coordinator: EmoncmsCoordinator,
-        unique_id: str,
+        entry_id: str,
         unit_of_measurement: str | None,
         name: str,
         idx: int,
@@ -189,7 +188,7 @@ class EmonCmsSensor(CoordinatorEntity[EmoncmsCoordinator], SensorEntity):
             elem = self.coordinator.data[self.idx]
         self._attr_name = f"{name} {elem[FEED_NAME]}"
         self._attr_native_unit_of_measurement = unit_of_measurement
-        self._attr_unique_id = f"{unique_id}-{elem[FEED_ID]}"
+        self._attr_unique_id = f"{entry_id}-{elem[FEED_ID]}"
         if unit_of_measurement in ("kWh", "Wh"):
             self._attr_device_class = SensorDeviceClass.ENERGY
             self._attr_state_class = SensorStateClass.TOTAL_INCREASING

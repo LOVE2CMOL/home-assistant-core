@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 
 from aiorussound import Controller
-from aiorussound.models import PlayStatus, Source
+from aiorussound.models import Source
 from aiorussound.rio import ZoneControlSurface
 
 from homeassistant.components.media_player import (
@@ -132,18 +132,11 @@ class RussoundZoneDevice(RussoundBaseEntity, MediaPlayerEntity):
     def state(self) -> MediaPlayerState | None:
         """Return the state of the device."""
         status = self._zone.status
-        play_status = self._source.play_status
-        if not status:
+        if status == "ON":
+            return MediaPlayerState.ON
+        if status == "OFF":
             return MediaPlayerState.OFF
-        if play_status == PlayStatus.PLAYING:
-            return MediaPlayerState.PLAYING
-        if play_status == PlayStatus.PAUSED:
-            return MediaPlayerState.PAUSED
-        if play_status == PlayStatus.TRANSITIONING:
-            return MediaPlayerState.BUFFERING
-        if play_status == PlayStatus.STOPPED:
-            return MediaPlayerState.IDLE
-        return MediaPlayerState.ON
+        return None
 
     @property
     def source(self):
@@ -182,7 +175,7 @@ class RussoundZoneDevice(RussoundBaseEntity, MediaPlayerEntity):
         Value is returned based on a range (0..50).
         Therefore float divide by 50 to get to the required range.
         """
-        return self._zone.volume / 50.0
+        return float(self._zone.volume or "0") / 50.0
 
     @command
     async def async_turn_off(self) -> None:

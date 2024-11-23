@@ -2,12 +2,12 @@
 
 from unittest.mock import MagicMock, patch
 
-from aiotedee import (
+from pytedee_async import (
     TedeeClientException,
     TedeeDataUpdateException,
     TedeeLocalAuthException,
 )
-from aiotedee.bridge import TedeeBridge
+from pytedee_async.bridge import TedeeBridge
 import pytest
 
 from homeassistant.components.tedee.const import CONF_LOCAL_ACCESS_TOKEN, DOMAIN

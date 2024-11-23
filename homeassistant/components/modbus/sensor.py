@@ -91,7 +91,6 @@ class ModbusRegisterSensor(BaseStructPlatform, RestoreSensor, SensorEntity):
         self._coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
-            config_entry=None,
             name=name,
         )
 

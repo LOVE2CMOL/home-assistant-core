@@ -16,7 +16,7 @@ from sqlalchemy.pool import (
     StaticPool,
 )
 
-from homeassistant.helpers.frame import ReportBehavior, report_usage
+from homeassistant.helpers.frame import report
 from homeassistant.util.loop import raise_for_blocking_call
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,14 +108,14 @@ class RecorderPool(SingletonThreadPool, NullPool):
         # raise_for_blocking_call will raise an exception
 
     def _do_get_db_connection_protected(self) -> ConnectionPoolEntry:
-        report_usage(
+        report(
             (
                 "accesses the database without the database executor; "
                 f"{ADVISE_MSG} "
                 "for faster database operations"
             ),
             exclude_integrations={"recorder"},
-            core_behavior=ReportBehavior.LOG,
+            error_if_core=False,
         )
         return NullPool._create_connection(self)  # noqa: SLF001
 

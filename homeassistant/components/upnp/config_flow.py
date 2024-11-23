@@ -16,6 +16,7 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.core import HomeAssistant, callback
 
@@ -93,11 +94,9 @@ class UpnpFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> UpnpOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return UpnpOptionsFlowHandler()
+        return UpnpOptionsFlowHandler(config_entry)
 
     @property
     def _discoveries(self) -> dict[str, SsdpServiceInfo]:
@@ -300,7 +299,7 @@ class UpnpFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(title=title, data=data, options=options)
 
 
-class UpnpOptionsFlowHandler(OptionsFlow):
+class UpnpOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Handle an options flow."""
 
     async def async_step_init(
@@ -314,7 +313,7 @@ class UpnpOptionsFlowHandler(OptionsFlow):
             {
                 vol.Optional(
                     CONFIG_ENTRY_FORCE_POLL,
-                    default=self.config_entry.options.get(
+                    default=self.options.get(
                         CONFIG_ENTRY_FORCE_POLL, DEFAULT_CONFIG_ENTRY_FORCE_POLL
                     ),
                 ): bool,

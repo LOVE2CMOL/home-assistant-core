@@ -90,7 +90,6 @@ class ModbusBinarySensor(BasePlatform, RestoreEntity, BinarySensorEntity):
         self._coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
-            config_entry=None,
             name=name,
         )
 

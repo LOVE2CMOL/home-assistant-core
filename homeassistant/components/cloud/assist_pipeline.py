@@ -1,7 +1,6 @@
 """Handle Cloud assist pipelines."""
 
 import asyncio
-from typing import Any
 
 from homeassistant.components.assist_pipeline import (
     async_create_default_pipeline,
@@ -99,7 +98,7 @@ async def async_migrate_cloud_pipeline_engine(
     # is an after dependency of cloud
     await async_setup_pipeline_store(hass)
 
-    kwargs: dict[str, Any] = {pipeline_attribute: engine_id}
+    kwargs: dict[str, str] = {pipeline_attribute: engine_id}
     pipelines = async_get_pipelines(hass)
     for pipeline in pipelines:
         if getattr(pipeline, pipeline_attribute) == DOMAIN:

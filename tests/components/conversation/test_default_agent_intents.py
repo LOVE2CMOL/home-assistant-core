@@ -36,7 +36,6 @@ from homeassistant.helpers import (
     intent,
 )
 from homeassistant.setup import async_setup_component
-from homeassistant.util import dt as dt_util
 
 from tests.common import async_mock_service
 
@@ -446,22 +445,12 @@ async def test_todo_add_item_fr(
         assert intent_obj.slots.get("item", {}).get("value", "").strip() == "farine"
 
 
-@freeze_time(
-    datetime(
-        year=2013,
-        month=9,
-        day=17,
-        hour=1,
-        minute=2,
-        tzinfo=dt_util.UTC,
-    )
-)
+@freeze_time(datetime(year=2013, month=9, day=17, hour=1, minute=2))
 async def test_date_time(
     hass: HomeAssistant,
     init_components,
 ) -> None:
     """Test the date and time intents."""
-    await hass.config.async_set_time_zone("UTC")
     result = await conversation.async_converse(
         hass, "what is the date", None, Context(), None
     )

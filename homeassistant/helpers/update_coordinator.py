@@ -24,13 +24,12 @@ from homeassistant.exceptions import (
     ConfigEntryAuthFailed,
     ConfigEntryError,
     ConfigEntryNotReady,
-    HomeAssistantError,
 )
 from homeassistant.util.dt import utcnow
 
 from . import entity, event
 from .debounce import Debouncer
-from .frame import report_usage
+from .frame import report
 from .typing import UNDEFINED, UndefinedType
 
 REQUEST_REFRESH_DEFAULT_COOLDOWN = 10
@@ -44,7 +43,7 @@ _DataUpdateCoordinatorT = TypeVar(
 )
 
 
-class UpdateFailed(HomeAssistantError):
+class UpdateFailed(Exception):
     """Raised when an update has failed."""
 
 
@@ -287,20 +286,24 @@ class DataUpdateCoordinator(BaseDataUpdateCoordinatorProtocol, Generic[_DataT]):
         to ensure that multiple retries do not cause log spam.
         """
         if self.config_entry is None:
-            report_usage(
+            report(
                 "uses `async_config_entry_first_refresh`, which is only supported "
-                "for coordinators with a config entry",
-                breaks_in_ha_version="2025.11",
+                "for coordinators with a config entry and will stop working in "
+                "Home Assistant 2025.11",
+                error_if_core=True,
+                error_if_integration=False,
             )
         elif (
             self.config_entry.state
             is not config_entries.ConfigEntryState.SETUP_IN_PROGRESS
         ):
-            report_usage(
+            report(
                 "uses `async_config_entry_first_refresh`, which is only supported "
                 f"when entry state is {config_entries.ConfigEntryState.SETUP_IN_PROGRESS}, "
-                f"but it is in state {self.config_entry.state}",
-                breaks_in_ha_version="2025.11",
+                f"but it is in state {self.config_entry.state}, "
+                "This will stop working in Home Assistant 2025.11",
+                error_if_core=True,
+                error_if_integration=False,
             )
         if await self.__wrap_async_setup():
             await self._async_refresh(

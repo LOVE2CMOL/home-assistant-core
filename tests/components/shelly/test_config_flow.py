@@ -16,7 +16,7 @@ import pytest
 
 from homeassistant import config_entries
 from homeassistant.components import zeroconf
-from homeassistant.components.shelly import MacAddressMismatchError, config_flow
+from homeassistant.components.shelly import config_flow
 from homeassistant.components.shelly.const import (
     CONF_BLE_SCANNER_MODE,
     DOMAIN,
@@ -331,7 +331,6 @@ async def test_form_missing_model_key_zeroconf(
     ("exc", "base_error"),
     [
         (DeviceConnectionError, "cannot_connect"),
-        (MacAddressMismatchError, "mac_address_mismatch"),
         (ValueError, "unknown"),
     ],
 )
@@ -437,7 +436,6 @@ async def test_user_setup_ignored_device(
     [
         (InvalidAuthError, "invalid_auth"),
         (DeviceConnectionError, "cannot_connect"),
-        (MacAddressMismatchError, "mac_address_mismatch"),
         (ValueError, "unknown"),
     ],
 )
@@ -475,7 +473,6 @@ async def test_form_auth_errors_test_connection_gen1(
     [
         (DeviceConnectionError, "cannot_connect"),
         (InvalidAuthError, "invalid_auth"),
-        (MacAddressMismatchError, "mac_address_mismatch"),
         (ValueError, "unknown"),
     ],
 )
@@ -847,19 +844,8 @@ async def test_reauth_successful(
         (3, {"password": "test2 password"}),
     ],
 )
-@pytest.mark.parametrize(
-    ("exc", "abort_reason"),
-    [
-        (DeviceConnectionError, "reauth_unsuccessful"),
-        (MacAddressMismatchError, "mac_address_mismatch"),
-    ],
-)
 async def test_reauth_unsuccessful(
-    hass: HomeAssistant,
-    gen: int,
-    user_input: dict[str, str],
-    exc: Exception,
-    abort_reason: str,
+    hass: HomeAssistant, gen: int, user_input: dict[str, str]
 ) -> None:
     """Test reauthentication flow failed."""
     entry = MockConfigEntry(
@@ -876,9 +862,13 @@ async def test_reauth_unsuccessful(
             return_value={"mac": "test-mac", "type": MODEL_1, "auth": True, "gen": gen},
         ),
         patch(
-            "aioshelly.block_device.BlockDevice.create", new=AsyncMock(side_effect=exc)
+            "aioshelly.block_device.BlockDevice.create",
+            new=AsyncMock(side_effect=InvalidAuthError),
         ),
-        patch("aioshelly.rpc_device.RpcDevice.create", new=AsyncMock(side_effect=exc)),
+        patch(
+            "aioshelly.rpc_device.RpcDevice.create",
+            new=AsyncMock(side_effect=InvalidAuthError),
+        ),
     ):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -886,7 +876,7 @@ async def test_reauth_unsuccessful(
         )
 
         assert result["type"] is FlowResultType.ABORT
-        assert result["reason"] == abort_reason
+        assert result["reason"] == "reauth_unsuccessful"
 
 
 async def test_reauth_get_info_error(hass: HomeAssistant) -> None:

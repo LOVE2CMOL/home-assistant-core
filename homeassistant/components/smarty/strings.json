@@ -46,11 +46,6 @@
         "name": "Boost state"
       }
     },
-    "button": {
-      "reset_filters_timer": {
-        "name": "Reset filters timer"
-      }
-    },
     "sensor": {
       "supply_air_temperature": {
         "name": "Supply air temperature"
@@ -69,11 +64,6 @@
       },
       "filter_days_left": {
         "name": "Filter days left"
-      }
-    },
-    "switch": {
-      "boost": {
-        "name": "Boost"
       }
     }
   }

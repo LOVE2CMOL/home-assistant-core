@@ -294,24 +294,19 @@
         "name": "Connection type"
       },
       "telegrams_incoming": {
-        "name": "Incoming telegrams",
-        "unit_of_measurement": "[%key:component::knx::entity::sensor::telegram_count::unit_of_measurement%]"
+        "name": "Incoming telegrams"
       },
       "telegrams_incoming_error": {
-        "name": "Incoming telegram errors",
-        "unit_of_measurement": "errors"
+        "name": "Incoming telegram errors"
       },
       "telegrams_outgoing": {
-        "name": "Outgoing telegrams",
-        "unit_of_measurement": "[%key:component::knx::entity::sensor::telegram_count::unit_of_measurement%]"
+        "name": "Outgoing telegrams"
       },
       "telegrams_outgoing_error": {
-        "name": "Outgoing telegram errors",
-        "unit_of_measurement": "[%key:component::knx::entity::sensor::telegrams_incoming_error::unit_of_measurement%]"
+        "name": "Outgoing telegram errors"
       },
       "telegram_count": {
-        "name": "Telegrams",
-        "unit_of_measurement": "telegrams"
+        "name": "Telegrams"
       }
     }
   },

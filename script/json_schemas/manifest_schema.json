@@ -308,7 +308,7 @@
       "quality_scale": {
         "description": "The quality scale of the integration.\nhttps://developers.home-assistant.io/docs/creating_integration_manifest/#integration-quality-scale",
         "type": "string",
-        "enum": ["bronze", "silver", "gold", "platinum", "internal", "legacy"]
+        "enum": ["internal", "silver", "gold", "platinum"]
       },
       "requirements": {
         "description": "The PyPI package requirements for the integration. The package has to be pinned to a specific version.\nhttps://developers.home-assistant.io/docs/creating_integration_manifest/#requirements",

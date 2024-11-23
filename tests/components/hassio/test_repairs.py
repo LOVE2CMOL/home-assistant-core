@@ -3,17 +3,8 @@
 from collections.abc import Generator
 from http import HTTPStatus
 import os
-from unittest.mock import AsyncMock, patch
-from uuid import uuid4
+from unittest.mock import patch
 
-from aiohasupervisor import SupervisorError
-from aiohasupervisor.models import (
-    ContextType,
-    Issue,
-    IssueType,
-    Suggestion,
-    SuggestionType,
-)
 import pytest
 
 from homeassistant.core import HomeAssistant
@@ -23,6 +14,7 @@ from homeassistant.setup import async_setup_component
 from .test_init import MOCK_ENVIRON
 from .test_issues import mock_resolution_info
 
+from tests.test_util.aiohttp import AiohttpClientMocker
 from tests.typing import ClientSessionGenerator
 
 
@@ -36,39 +28,34 @@ def fixture_supervisor_environ() -> Generator[None]:
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_repair_flow(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.MULTIPLE_DATA_DISKS,
-                context=ContextType.SYSTEM,
-                reference="/dev/sda1",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "multiple_data_disks",
+                "context": "system",
+                "reference": "/dev/sda1",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "rename_data_disk",
+                        "context": "system",
+                        "reference": "/dev/sda1",
+                    }
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.RENAME_DATA_DISK,
-                    context=ContextType.SYSTEM,
-                    reference="/dev/sda1",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                )
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -108,53 +95,52 @@ async def test_supervisor_issue_repair_flow(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_repair_flow_with_multiple_suggestions(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue with multiple suggestions."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.REBOOT_REQUIRED,
-                context=ContextType.SYSTEM,
-                reference="test",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "reboot_required",
+                "context": "system",
+                "reference": "test",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_reboot",
+                        "context": "system",
+                        "reference": "test",
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "test_type",
+                        "context": "system",
+                        "reference": "test",
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBOOT,
-                    context=ContextType.SYSTEM,
-                    reference="test",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-                Suggestion(
-                    type="test_type",
-                    context=ContextType.SYSTEM,
-                    reference="test",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -203,53 +189,52 @@ async def test_supervisor_issue_repair_flow_with_multiple_suggestions(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1236"
+    )
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_repair_flow_with_multiple_suggestions_and_confirmation(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue with multiple suggestions and choice requires confirmation."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.REBOOT_REQUIRED,
-                context=ContextType.SYSTEM,
-                reference=None,
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "reboot_required",
+                "context": "system",
+                "reference": None,
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_reboot",
+                        "context": "system",
+                        "reference": None,
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "test_type",
+                        "context": "system",
+                        "reference": None,
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBOOT,
-                    context=ContextType.SYSTEM,
-                    reference=None,
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-                Suggestion(
-                    type="test_type",
-                    context=ContextType.SYSTEM,
-                    reference=None,
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -317,46 +302,46 @@ async def test_supervisor_issue_repair_flow_with_multiple_suggestions_and_confir
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_repair_flow_skip_confirmation(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test confirmation skipped for fix flow for supervisor issue with one suggestion."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.REBOOT_REQUIRED,
-                context=ContextType.SYSTEM,
-                reference=None,
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "reboot_required",
+                "context": "system",
+                "reference": None,
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_reboot",
+                        "context": "system",
+                        "reference": None,
+                    }
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBOOT,
-                    context=ContextType.SYSTEM,
-                    reference=None,
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -396,54 +381,53 @@ async def test_supervisor_issue_repair_flow_skip_confirmation(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_mount_failed_repair_flow_error(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test repair flow fails when repair fails to apply."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.MOUNT_FAILED,
-                context=ContextType.MOUNT,
-                reference="backup_share",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "mount_failed",
+                "context": "mount",
+                "reference": "backup_share",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_reload",
+                        "context": "mount",
+                        "reference": "backup_share",
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "execute_remove",
+                        "context": "mount",
+                        "reference": "backup_share",
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_RELOAD,
-                    context=ContextType.MOUNT,
-                    reference="backup_share",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REMOVE,
-                    context=ContextType.MOUNT,
-                    reference="backup_share",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ]
-        },
-        suggestion_result=SupervisorError("boom"),
+        suggestion_result=False,
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -475,52 +459,46 @@ async def test_mount_failed_repair_flow_error(
         "description_placeholders": None,
     }
 
-    assert issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
+    assert issue_registry.async_get_issue(domain="hassio", issue_id="1234")
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_mount_failed_repair_flow(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test repair flow for mount_failed issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.MOUNT_FAILED,
-                context=ContextType.MOUNT,
-                reference="backup_share",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "mount_failed",
+                "context": "mount",
+                "reference": "backup_share",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_reload",
+                        "context": "mount",
+                        "reference": "backup_share",
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "execute_remove",
+                        "context": "mount",
+                        "reference": "backup_share",
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_RELOAD,
-                    context=ContextType.MOUNT,
-                    reference="backup_share",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REMOVE,
-                    context=ContextType.MOUNT,
-                    reference="backup_share",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -573,8 +551,13 @@ async def test_mount_failed_repair_flow(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.parametrize(
@@ -583,69 +566,62 @@ async def test_mount_failed_repair_flow(
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_docker_config_repair_flow(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.DOCKER_CONFIG,
-                context=ContextType.SYSTEM,
-                reference=None,
-                uuid=(issue1_uuid := uuid4()),
-            ),
-            Issue(
-                type=IssueType.DOCKER_CONFIG,
-                context=ContextType.CORE,
-                reference=None,
-                uuid=(issue2_uuid := uuid4()),
-            ),
-            Issue(
-                type=IssueType.DOCKER_CONFIG,
-                context=ContextType.ADDON,
-                reference="test",
-                uuid=(issue3_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "docker_config",
+                "context": "system",
+                "reference": None,
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_rebuild",
+                        "context": "system",
+                        "reference": None,
+                    }
+                ],
+            },
+            {
+                "uuid": "1236",
+                "type": "docker_config",
+                "context": "core",
+                "reference": None,
+                "suggestions": [
+                    {
+                        "uuid": "1237",
+                        "type": "execute_rebuild",
+                        "context": "core",
+                        "reference": None,
+                    }
+                ],
+            },
+            {
+                "uuid": "1238",
+                "type": "docker_config",
+                "context": "addon",
+                "reference": "test",
+                "suggestions": [
+                    {
+                        "uuid": "1239",
+                        "type": "execute_rebuild",
+                        "context": "addon",
+                        "reference": "test",
+                    }
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue1_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBUILD,
-                    context=ContextType.SYSTEM,
-                    reference=None,
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-            ],
-            issue2_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBUILD,
-                    context=ContextType.CORE,
-                    reference=None,
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ],
-            issue3_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REBUILD,
-                    context=ContextType.ADDON,
-                    reference="test",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ],
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue1_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -685,53 +661,52 @@ async def test_supervisor_issue_docker_config_repair_flow(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue1_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_repair_flow_multiple_data_disks(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for multiple data disks supervisor issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.MULTIPLE_DATA_DISKS,
-                context=ContextType.SYSTEM,
-                reference="/dev/sda1",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "multiple_data_disks",
+                "context": "system",
+                "reference": "/dev/sda1",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "rename_data_disk",
+                        "context": "system",
+                        "reference": "/dev/sda1",
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "adopt_data_disk",
+                        "context": "system",
+                        "reference": "/dev/sda1",
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.RENAME_DATA_DISK,
-                    context=ContextType.SYSTEM,
-                    reference="/dev/sda1",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-                Suggestion(
-                    type=SuggestionType.ADOPT_DATA_DISK,
-                    context=ContextType.SYSTEM,
-                    reference="/dev/sda1",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -799,8 +774,13 @@ async def test_supervisor_issue_repair_flow_multiple_data_disks(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1236"
+    )
 
 
 @pytest.mark.parametrize(
@@ -809,39 +789,34 @@ async def test_supervisor_issue_repair_flow_multiple_data_disks(
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_detached_addon_removed(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type=IssueType.DETACHED_ADDON_REMOVED,
-                context=ContextType.ADDON,
-                reference="test",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "detached_addon_removed",
+                "context": "addon",
+                "reference": "test",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_remove",
+                        "context": "addon",
+                        "reference": "test",
+                    }
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type=SuggestionType.EXECUTE_REMOVE,
-                    context=ContextType.ADDON,
-                    reference="test",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -886,8 +861,13 @@ async def test_supervisor_issue_detached_addon_removed(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )
 
 
 @pytest.mark.parametrize(
@@ -896,46 +876,40 @@ async def test_supervisor_issue_detached_addon_removed(
 @pytest.mark.usefixtures("all_setup_requests")
 async def test_supervisor_issue_addon_boot_fail(
     hass: HomeAssistant,
-    supervisor_client: AsyncMock,
+    aioclient_mock: AiohttpClientMocker,
     hass_client: ClientSessionGenerator,
     issue_registry: ir.IssueRegistry,
 ) -> None:
     """Test fix flow for supervisor issue."""
     mock_resolution_info(
-        supervisor_client,
+        aioclient_mock,
         issues=[
-            Issue(
-                type="boot_fail",
-                context=ContextType.ADDON,
-                reference="test",
-                uuid=(issue_uuid := uuid4()),
-            ),
+            {
+                "uuid": "1234",
+                "type": "boot_fail",
+                "context": "addon",
+                "reference": "test",
+                "suggestions": [
+                    {
+                        "uuid": "1235",
+                        "type": "execute_start",
+                        "context": "addon",
+                        "reference": "test",
+                    },
+                    {
+                        "uuid": "1236",
+                        "type": "disable_boot",
+                        "context": "addon",
+                        "reference": "test",
+                    },
+                ],
+            },
         ],
-        suggestions_by_issue={
-            issue_uuid: [
-                Suggestion(
-                    type="execute_start",
-                    context=ContextType.ADDON,
-                    reference="test",
-                    uuid=(sugg_uuid := uuid4()),
-                    auto=False,
-                ),
-                Suggestion(
-                    type="disable_boot",
-                    context=ContextType.ADDON,
-                    reference="test",
-                    uuid=uuid4(),
-                    auto=False,
-                ),
-            ]
-        },
     )
 
     assert await async_setup_component(hass, "hassio", {})
 
-    repair_issue = issue_registry.async_get_issue(
-        domain="hassio", issue_id=issue_uuid.hex
-    )
+    repair_issue = issue_registry.async_get_issue(domain="hassio", issue_id="1234")
     assert repair_issue
 
     client = await hass_client()
@@ -988,5 +962,10 @@ async def test_supervisor_issue_addon_boot_fail(
         "description_placeholders": None,
     }
 
-    assert not issue_registry.async_get_issue(domain="hassio", issue_id=issue_uuid.hex)
-    supervisor_client.resolution.apply_suggestion.assert_called_once_with(sugg_uuid)
+    assert not issue_registry.async_get_issue(domain="hassio", issue_id="1234")
+
+    assert aioclient_mock.mock_calls[-1][0] == "post"
+    assert (
+        str(aioclient_mock.mock_calls[-1][1])
+        == "http://127.0.0.1/resolution/suggestion/1235"
+    )

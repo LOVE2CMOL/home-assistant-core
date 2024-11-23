@@ -197,7 +197,6 @@ async def test_access_from_supervisor_ip(
     hass: HomeAssistant,
     aiohttp_client: ClientSessionGenerator,
     hassio_env,
-    resolution_info: AsyncMock,
 ) -> None:
     """Test accessing to server from supervisor IP."""
     app = web.Application()
@@ -219,7 +218,17 @@ async def test_access_from_supervisor_ip(
 
     manager = app[KEY_BAN_MANAGER]
 
-    assert await async_setup_component(hass, "hassio", {"hassio": {}})
+    with patch(
+        "homeassistant.components.hassio.HassIO.get_resolution_info",
+        return_value={
+            "unsupported": [],
+            "unhealthy": [],
+            "suggestions": [],
+            "issues": [],
+            "checks": [],
+        },
+    ):
+        assert await async_setup_component(hass, "hassio", {"hassio": {}})
 
     m_open = mock_open()
 

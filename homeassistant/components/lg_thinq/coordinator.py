@@ -77,9 +77,5 @@ async def async_setup_device_coordinator(
     coordinator = DeviceDataUpdateCoordinator(hass, ha_bridge)
     await coordinator.async_refresh()
 
-    _LOGGER.debug(
-        "Setup device's coordinator: %s, model:%s",
-        coordinator.device_name,
-        coordinator.api.device.model_name,
-    )
+    _LOGGER.debug("Setup device's coordinator: %s", coordinator.device_name)
     return coordinator

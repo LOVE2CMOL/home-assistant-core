@@ -3,14 +3,14 @@
 from typing import Any
 from unittest.mock import MagicMock
 
-from pylamarzocco.const import (
+from lmcloud.const import (
     KEYS_PER_MODEL,
     BoilerType,
     MachineModel,
     PhysicalKey,
     PrebrewMode,
 )
-from pylamarzocco.exceptions import RequestNotSuccessful
+from lmcloud.exceptions import RequestNotSuccessful
 import pytest
 from syrupy import SnapshotAssertion
 

@@ -4,16 +4,16 @@ from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import Any
 
-from pylamarzocco.const import (
+from lmcloud.const import (
     KEYS_PER_MODEL,
     BoilerType,
     MachineModel,
     PhysicalKey,
     PrebrewMode,
 )
-from pylamarzocco.exceptions import RequestNotSuccessful
-from pylamarzocco.lm_machine import LaMarzoccoMachine
-from pylamarzocco.models import LaMarzoccoMachineConfig
+from lmcloud.exceptions import RequestNotSuccessful
+from lmcloud.lm_machine import LaMarzoccoMachine
+from lmcloud.models import LaMarzoccoMachineConfig
 
 from homeassistant.components.number import (
     NumberDeviceClass,

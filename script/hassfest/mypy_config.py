@@ -43,7 +43,6 @@ GENERAL_SETTINGS: Final[dict[str, str]] = {
     "local_partial_types": "true",
     "strict_equality": "true",
     "no_implicit_optional": "true",
-    "report_deprecated_as_error": "true",
     "warn_incomplete_stub": "true",
     "warn_redundant_casts": "true",
     "warn_unused_configs": "true",

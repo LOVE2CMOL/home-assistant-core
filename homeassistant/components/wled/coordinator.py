@@ -49,7 +49,6 @@ class WLEDDataUpdateCoordinator(DataUpdateCoordinator[WLEDDevice]):
         super().__init__(
             hass,
             LOGGER,
-            config_entry=entry,
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
@@ -134,7 +133,6 @@ class WLEDReleasesDataUpdateCoordinator(DataUpdateCoordinator[Releases]):
         super().__init__(
             hass,
             LOGGER,
-            config_entry=None,
             name=DOMAIN,
             update_interval=RELEASES_SCAN_INTERVAL,
         )

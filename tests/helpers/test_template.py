@@ -24,7 +24,6 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     STATE_ON,
     STATE_UNAVAILABLE,
-    UnitOfArea,
     UnitOfLength,
     UnitOfMass,
     UnitOfPrecipitationDepth,
@@ -62,7 +61,6 @@ def _set_up_units(hass: HomeAssistant) -> None:
     hass.config.units = UnitSystem(
         "custom",
         accumulated_precipitation=UnitOfPrecipitationDepth.MILLIMETERS,
-        area=UnitOfArea.SQUARE_METERS,
         conversions={},
         length=UnitOfLength.METERS,
         mass=UnitOfMass.GRAMS,

@@ -63,6 +63,10 @@ def _ordered_shared_schema(schema_input):
 class OptionsFlowHandler(OptionsFlow):
     """Options for the component."""
 
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Init object."""
+        self.config_entry = config_entry
+
     async def async_step_init(
         self, user_input: dict[str, int] | None = None
     ) -> ConfigFlowResult:
@@ -105,7 +109,7 @@ class NetgearFlowHandler(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     async def _show_setup_form(
         self,

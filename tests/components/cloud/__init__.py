@@ -35,7 +35,6 @@ PIPELINE_DATA = {
             "tts_voice": "Arnold Schwarzenegger",
             "wake_word_entity": None,
             "wake_word_id": None,
-            "prefer_local_intents": False,
         },
         {
             "conversation_engine": "conversation_engine_2",
@@ -50,7 +49,6 @@ PIPELINE_DATA = {
             "tts_voice": "The Voice",
             "wake_word_entity": None,
             "wake_word_id": None,
-            "prefer_local_intents": False,
         },
         {
             "conversation_engine": "conversation_engine_3",
@@ -65,7 +63,6 @@ PIPELINE_DATA = {
             "tts_voice": None,
             "wake_word_entity": None,
             "wake_word_id": None,
-            "prefer_local_intents": False,
         },
     ],
     "preferred_item": "01GX8ZWBAQYWNB1XV3EXEZ75DY",

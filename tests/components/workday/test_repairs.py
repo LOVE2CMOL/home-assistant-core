@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from homeassistant.components.workday.const import CONF_REMOVE_HOLIDAYS, DOMAIN
 from homeassistant.const import CONF_COUNTRY
 from homeassistant.core import HomeAssistant
@@ -429,10 +427,6 @@ async def test_bad_date_holiday(
     assert issue
 
 
-@pytest.mark.parametrize(
-    "ignore_translations",
-    ["component.workday.issues.issue_1.title"],
-)
 async def test_other_fixable_issues(
     hass: HomeAssistant,
     hass_client: ClientSessionGenerator,

@@ -76,6 +76,10 @@ def options_data(user_input: dict[str, str]) -> dict[str, list[int]]:
 class OptionsFlowHandler(OptionsFlow):
     """Options for the component."""
 
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Init object."""
+        self.config_entry = config_entry
+
     async def async_step_init(
         self,
         user_input: dict[str, str] | None = None,
@@ -100,7 +104,7 @@ class VeraFlowHandler(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowHandler:
         """Get the options flow."""
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

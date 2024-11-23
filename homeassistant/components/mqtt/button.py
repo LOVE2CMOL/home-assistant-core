@@ -20,8 +20,6 @@ from .models import MqttCommandTemplate
 from .schemas import MQTT_ENTITY_COMMON_SCHEMA
 from .util import valid_publish_topic
 
-PARALLEL_UPDATES = 0
-
 CONF_PAYLOAD_PRESS = "payload_press"
 DEFAULT_NAME = "MQTT Button"
 DEFAULT_PAYLOAD_PRESS = "PRESS"

@@ -16,7 +16,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
@@ -66,11 +66,9 @@ class EnphaseConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> EnvoyOptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> EnvoyOptionsFlowHandler:
         """Options flow handler for Enphase_Envoy."""
-        return EnvoyOptionsFlowHandler()
+        return EnvoyOptionsFlowHandler(config_entry)
 
     @callback
     def _async_generate_schema(self) -> vol.Schema:
@@ -290,7 +288,7 @@ class EnphaseConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
 
-class EnvoyOptionsFlowHandler(OptionsFlow):
+class EnvoyOptionsFlowHandler(OptionsFlowWithConfigEntry):
     """Envoy config flow options handler."""
 
     async def async_step_init(
